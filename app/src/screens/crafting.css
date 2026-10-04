@@ -1,0 +1,30 @@
+.crafting__stage { position: relative; width: 260px; height: 300px; margin: 18px auto 0; }
+.crafting__halo { position: absolute; left: 50%; top: 62%; width: 260px; height: 260px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, rgba(212,165,90,.28), transparent 65%); animation: breathe 3.2s ease-in-out infinite; }
+@keyframes breathe { 50% { transform: translate(-50%, -50%) scale(1.08); opacity: .75; } }
+
+.crafting__cup { position: absolute; left: 50%; top: 62%; width: 190px; height: 190px; transform: translate(-50%, -50%); border-radius: 50%; background: #FFFDF9; box-shadow: 0 18px 40px rgba(80,60,40,.18), inset 0 0 0 1px rgba(160,135,110,.15); display: grid; place-items: center; }
+.crafting__liquid { width: 150px; height: 150px; border-radius: 50%; background: conic-gradient(from 20deg, #EBDDC6, #F2E6D5, #E8D7C0, #EBDDC6); transition: background 1s; animation: swirl 6s linear infinite; filter: blur(.4px); }
+[data-stage='2'] .crafting__liquid, [data-stage='3'] .crafting__liquid, [data-stage='4'] .crafting__liquid { background: conic-gradient(from 20deg, #E9C79A, #F1D7C9, #DDB98F, #EBC6C9, #E9C79A); }
+[data-stage='3'] .crafting__liquid, [data-stage='4'] .crafting__liquid { background: conic-gradient(from 20deg, #E2AE6A, #E7B3B9, #D9A06A, #E39FA8, #E2AE6A); }
+@keyframes swirl { to { transform: rotate(360deg); } }
+
+.crafting__ripple { position: absolute; left: 50%; top: 62%; width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,.85); transform: translate(-50%, -50%) scale(.2); opacity: 0; animation: ripple 2.6s ease-out infinite; }
+.crafting__ripple.r2 { animation-delay: .9s; }
+.crafting__ripple.r3 { animation-delay: 1.8s; }
+@keyframes ripple { 0% { opacity: .9; transform: translate(-50%, -50%) scale(.2); } 100% { opacity: 0; transform: translate(-50%, -50%) scale(3.4); } }
+
+.crafting__drop { position: absolute; width: 42px; height: 58px; left: calc(50% - 30px); top: 0; animation: fall 2.6s cubic-bezier(.55,0,.9,.5) infinite; }
+.crafting__drop.d2 { left: calc(50% + 4px); animation-delay: .9s; }
+@keyframes fall { 0% { transform: translateY(-20px) scale(.9); opacity: 0; } 15% { opacity: 1; } 55% { transform: translateY(150px) scale(.55); opacity: 1; } 62%, 100% { transform: translateY(160px) scale(.1); opacity: 0; } }
+
+.crafting__title { text-align: center; margin: 22px 0 0; font-size: 40px; }
+.crafting__steps { list-style: none; margin: 26px auto 0; padding: 0; display: grid; gap: 12px; width: min(100%, 280px); }
+.crafting__steps li { display: flex; align-items: center; gap: 12px; font-size: 16px; color: var(--rain); transition: color .4s; }
+.crafting__steps i { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px currentColor; transition: background .4s, box-shadow .4s; flex: none; }
+.crafting__steps li.now { color: var(--moss-deep); }
+.crafting__steps li.now i { animation: pulse 1s ease-in-out infinite; }
+.crafting__steps li.done { color: var(--roast); }
+.crafting__steps li.done i { background: var(--honey); box-shadow: 0 0 10px rgba(212,165,90,.6); }
+@keyframes pulse { 50% { transform: scale(.6); } }
+.crafting__bar { margin: auto auto 0; width: min(100%, 280px); height: 3px; border-radius: 3px; background: rgba(160,135,110,.2); overflow: hidden; }
+.crafting__bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--honey), var(--cherry)); transition: width .8s var(--ease); }

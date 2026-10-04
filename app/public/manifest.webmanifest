@@ -1,0 +1,1 @@
+{ "name": "ode", "short_name": "ode", "start_url": "/", "display": "standalone", "background_color": "#FAF6F0", "theme_color": "#FAF6F0", "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }] }

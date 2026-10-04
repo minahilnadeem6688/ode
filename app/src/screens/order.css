@@ -1,0 +1,26 @@
+.order__lbl { text-align: center; margin: 24px 0 0; }
+.order__code { text-align: center; margin: 4px 0 0; font: 300 112px/1 var(--serif); letter-spacing: -0.04em; font-variation-settings: 'SOFT' 100, 'opsz' 144; color: var(--roast); }
+.order__pay { text-align: center; margin: 6px auto 0; max-width: 30ch; font-size: 15.5px; }
+.order__card { display: flex; align-items: center; gap: 14px; padding: 12px; margin-top: 26px; }
+.order__thumb { width: 64px; height: 64px; border-radius: 16px; overflow: hidden; flex: none; }
+.order__thumb span, .order__thumb svg { width: 100%; height: 100%; display: block; }
+.order__name { display: block; font: 400 21px var(--serif); font-variation-settings: 'SOFT' 100; }
+.order__card small { color: var(--moss); font-size: 14px; }
+
+.order__steps { list-style: none; padding: 0; margin: 26px 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.order__steps li { display: grid; justify-items: center; gap: 8px; text-align: center; font-size: 13.5px; color: var(--rain); position: relative; }
+.order__steps li:not(:last-child)::after { content: ''; position: absolute; top: 13px; left: calc(50% + 18px); right: calc(-50% + 18px); height: 2px; background: rgba(160,135,110,.22); }
+.order__steps li.done:not(:last-child)::after { background: var(--honey); }
+.order__steps i { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 1.5px currentColor; color: var(--rain); }
+.order__steps li.done, .order__steps li.now { color: var(--roast); }
+.order__steps li.done i { background: var(--honey); color: var(--cream); box-shadow: none; }
+.order__steps li.now i { box-shadow: inset 0 0 0 2px var(--honey); color: var(--honey); animation: glow 1.6s ease-in-out infinite; }
+@keyframes glow { 50% { box-shadow: inset 0 0 0 2px var(--honey), 0 0 0 7px rgba(212,165,90,.18); } }
+
+.order__rate { margin-top: 26px; padding: 20px; display: grid; gap: 16px; text-align: center; }
+.order__ask { margin: 0; font-size: 30px; }
+.order__stars { display: flex; justify-content: center; gap: 4px; }
+.order__stars button { border: 0; background: none; padding: 4px; color: var(--honey); transition: transform .2s var(--spring); }
+.order__stars button.on { transform: scale(1.08); }
+.order__thanks { text-align: center; margin: 26px 0 0; }
+.order__foot { margin-top: auto; padding-top: 24px; }

@@ -1,0 +1,73 @@
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { CafeBar, Portrait } from '../components/Brand';
+import Icon from '../components/Icon';
+import { creations, orders } from '../lib/store';
+import './order.css';
+
+const STEPS = [['new', 'received'], ['making', 'being made'], ['ready', 'ready for you']];
+const CHIPS = ['perfect', 'too sweet', 'not sweet enough', 'too strong', 'would order again'];
+
+export default function Order() {
+  const { code } = useParams();
+  const navigate = useNavigate();
+  const [o, setO] = useState(() => orders.get(code));
+  const [rating, setRating] = useState(0);
+  const [chips, setChips] = useState([]);
+  const [thanks, setThanks] = useState(false);
+
+  useEffect(() => orders.subscribe(() => setO(orders.get(code))), [code]);
+
+  if (!o) return <main className="screen"><CafeBar /><p className="muted">We couldn't find that order. <Link to="/">Start again</Link>.</p></main>;
+  const at = STEPS.findIndex((s) => s[0] === o.status);
+
+  function submit() {
+    creations.rate(o.creationId, rating, chips);
+    setThanks(true);
+  }
+
+  return (
+    <main className="screen order" style={{ '--bg': 'linear-gradient(160deg, #FBF7F1, #F1E9DC)' }}>
+      <CafeBar left={<button type="button" className="iconbtn" aria-label="Home" onClick={() => navigate('/')}><Icon name="close" /></button>} />
+
+      <p className="eyebrow order__lbl rise">your order code</p>
+      <p className="order__code rise" style={{ '--d': '.05s' }}>{o.code}</p>
+      <p className="muted order__pay rise" style={{ '--d': '.1s' }}>Show this at the counter to pay. We'll call it out when it's ready.</p>
+
+      <div className="order__card card rise" style={{ '--d': '.16s' }}>
+        <span className="order__thumb"><Portrait creation={o.creation} width={120} height={120} id="ot" /></span>
+        <div><b className="order__name">{o.creation.name}</b><small>{o.size} · Rs {(o.creation.price + (o.size === 'large' ? 150 : 0)).toLocaleString('en-PK')}</small></div>
+      </div>
+
+      <ol className="order__steps rise" style={{ '--d': '.22s' }} aria-live="polite">
+        {STEPS.map(([id, label], i) => (
+          <li key={id} className={i < at ? 'done' : i === at ? 'now' : ''}><i>{i < at || o.status === 'ready' ? <Icon name="check" size={14} width={2.4} /> : null}</i>{label}</li>
+        ))}
+      </ol>
+
+      {o.status === 'ready' && !thanks && (
+        <section className="order__rate card rise">
+          <p className="display order__ask">how did it <em className="cherry">feel?</em></p>
+          <div className="order__stars" role="radiogroup" aria-label="Rating">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button key={n} type="button" role="radio" aria-checked={rating === n} aria-label={n + ' stars'} onClick={() => setRating(n)} className={n <= rating ? 'on' : ''}><Icon name="star" size={30} fill={n <= rating ? 'currentColor' : 'none'} /></button>
+            ))}
+          </div>
+          {rating > 0 && (
+            <>
+              <div className="chips" style={{ justifyContent: 'center' }}>
+                {CHIPS.map((c) => <button key={c} type="button" className="chip" aria-pressed={chips.includes(c)} onClick={() => setChips(chips.includes(c) ? chips.filter((x) => x !== c) : [...chips, c])}>{c}</button>)}
+              </div>
+              <button type="button" className="btn btn--roast btn--block" onClick={submit}>Send</button>
+            </>
+          )}
+        </section>
+      )}
+      {thanks && <p className="poem order__thanks rise">thank you. the next one will know you better.</p>}
+
+      <div className="order__foot">
+        <button type="button" className="btn btn--ghost btn--block" onClick={() => navigate('/share/' + o.creationId)}><Icon name="share" size={20} /> Share your ode</button>
+      </div>
+    </main>
+  );
+}

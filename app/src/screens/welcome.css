@@ -1,0 +1,9 @@
+.welcome__hero { margin-top: 18px; }
+.welcome__mark { margin: 0 0 8px -6px; }
+.welcome__hero h1 { margin: 0; font-size: clamp(48px, 13.5vw, 62px); }
+.welcome__hero p { margin: 16px 0 0; font-size: 16.5px; max-width: 32ch; }
+.welcome__ask { margin-top: 28px; display: grid; gap: 12px; }
+.welcome__examples { margin-top: 2px; }
+.welcome__cta { margin-top: auto; padding-top: 26px; }
+.welcome__foot { display: flex; justify-content: center; gap: 10px; margin: 16px 0 0; font-size: 14px; color: var(--moss); }
+.welcome__foot a { color: var(--roast); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--honey); }
