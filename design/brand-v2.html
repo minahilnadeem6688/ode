@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ode. brand board v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..800,0..100,0..1;1,9..144,300..800,0..100,0..1&family=Figtree:wght@400;500;600&display=swap">
+<style>
+  :root { --cream:#FAF6F0; --oyster:#F0EBE1; --moss:#8A8A72; --cherry:#C4858C; --honey:#D4A55A; --roast:#3A3530;
+    --serif:'Fraunces', Georgia, serif; --sans:'Figtree', system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #ECE5D8; color: var(--roast); font: 400 15px/1.55 var(--sans); }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 48px 32px 90px; }
+  .lbl { font: 500 12px var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--moss); margin: 64px 0 16px; display: flex; gap: 14px; align-items: baseline; }
+  .lbl b { font: 400 italic 26px var(--serif); letter-spacing: 0; text-transform: none; color: var(--roast); font-variation-settings: 'SOFT' 100; }
+  .word { font-family: var(--serif); font-weight: 500; letter-spacing: -.035em; line-height: .9; font-variation-settings: 'SOFT' 60, 'WONK' 0, 'opsz' 144; }
+
+  /* hero: the mark */
+  .hero { display: grid; grid-template-columns: 1.25fr 1fr; gap: 18px; }
+  .panel { border-radius: 28px; overflow: hidden; position: relative; }
+  .mark-big { background: var(--cream); height: 460px; display: grid; place-items: center; }
+  .mark-big .lock { display: flex; align-items: flex-start; gap: 4px; }
+  .mark-big .lock svg { width: 120px; height: 120px; margin-top: -18px; }
+  .mark-big .word { font-size: 190px; }
+  .mark-big .tag { position: absolute; bottom: 28px; left: 0; right: 0; text-align: center; font: 300 italic 22px var(--serif); color: var(--moss); font-variation-settings: 'SOFT' 100; }
+  .stack { display: grid; gap: 18px; grid-template-rows: 1fr 1fr; }
+  .mark-honey { background: var(--honey); display: grid; place-items: center; }
+  .mark-honey svg { width: 170px; height: 170px; }
+  .mark-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .appicon { background: linear-gradient(150deg, #3A3530, #221F1C); display: grid; place-items: center; }
+  .appicon .ic { width: 118px; height: 118px; border-radius: 30px; background: var(--cream); display: grid; place-items: center; box-shadow: 0 14px 30px rgba(0,0,0,.35); }
+  .appicon svg { width: 84px; height: 84px; margin-top: 6px; }
+  .tiny { background: var(--cream); display: grid; place-items: center; gap: 10px; padding: 18px; }
+  .tiny .row { display: flex; align-items: center; gap: 18px; }
+
+  .why { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
+  .why div { background: var(--cream); border-radius: 22px; padding: 22px; }
+  .why h4 { margin: 0 0 6px; font: 400 21px var(--serif); font-variation-settings: 'SOFT' 100; }
+  .why p { margin: 0; color: var(--moss); }
+
+  /* posters */
+  .posters { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .poster { aspect-ratio: 4/5; border-radius: 28px; overflow: hidden; position: relative; display: flex; flex-direction: column; }
+  .poster .cap { position: absolute; left: 30px; right: 30px; bottom: 26px; display: flex; justify-content: space-between; align-items: flex-end; }
+  .poster .sign { display: flex; align-items: center; gap: 6px; }
+  .poster .sign svg { width: 26px; height: 26px; margin-top: -10px; }
+  .poster .sign .word { font-size: 30px; }
+  .poster .small { font: 400 13px var(--sans); opacity: .8; }
+  .poster h3 { font: 400 54px/0.98 var(--serif); letter-spacing: -.03em; margin: 0; font-variation-settings: 'SOFT' 100, 'WONK' 1; }
+  .poster h3 em { font-style: italic; }
+  .why-ad { margin: 10px 4px 0; color: var(--moss); font-size: 14px; }
+
+  /* p1 latte */
+  .p1 { background: radial-gradient(circle at 50% 42%, #F6EEE2, #E7DCCB); }
+  .p1 .art { flex: 1; display: grid; place-items: center; padding-top: 20px; }
+  .p1 h3 { position: absolute; top: 34px; left: 32px; }
+  /* p2 menu */
+  .p2 { background: #F4ECDD; padding: 96px 54px 0; }
+  .menu { font: 400 23px/2.35 var(--serif); font-variation-settings: 'SOFT' 100; }
+  .menu .m { display: flex; justify-content: space-between; position: relative; color: #8a8174; }
+  .menu .m::after { content: ''; position: absolute; left: -6px; right: -6px; top: 52%; height: 3px; background: var(--cherry); border-radius: 3px; transform: rotate(-1deg); opacity: .9; }
+  .menu .m.you { color: var(--roast); font-size: 58px; font-style: italic; margin-top: 30px; line-height: 1.2; }
+  .menu .m.you::after { display: none; }
+  .menu .m.you span:last-child { font: 400 italic 21px var(--serif); align-self: center; color: var(--cherry); }
+  .menu h5 { margin: 0 0 6px; font: 500 12px var(--sans); letter-spacing: .3em; text-transform: uppercase; color: var(--moss); }
+  /* p3 two moods */
+  .p3 { background: var(--roast); color: var(--cream); padding: 34px 30px 0; }
+  .p3 .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 26px; }
+  .p3 .pic { border-radius: 18px; overflow: hidden; aspect-ratio: 4/5; }
+  .p3 .pic svg { width: 100%; height: 100%; display: block; }
+  .p3 .t { font: 400 13px var(--sans); opacity: .75; margin-top: 8px; }
+  .p3 .t b { display: block; font: 400 20px var(--serif); opacity: 1; font-variation-settings: 'SOFT' 100; }
+  /* p4 quote */
+  .p4 { background: var(--cherry); color: var(--cream); padding: 40px 36px; }
+  .p4 .q { width: 210px; height: 210px; margin: 10px 0 0 -20px; }
+  .p4 h3 { font-size: 64px; margin-top: 4px; }
+
+  /* things */
+  .things { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 18px; }
+  .thing { border-radius: 28px; overflow: hidden; height: 360px; position: relative; display: grid; place-items: center; }
+
+  .painted { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .painted div { background: var(--cream); border-radius: 26px; padding: 18px 18px 10px; text-align: center; color: var(--moss); font-size: 13px; }
+  .painted svg { width: 100%; height: auto; }
+
+  .secondary { display: grid; grid-template-columns: 1fr 2fr; gap: 18px; }
+  .secondary .panel { background: var(--cream); padding: 28px; }
+  .secondary p { color: var(--moss); margin: 8px 0 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="lbl" style="margin-top:0">01 <b>the mark</b></div>
+  <div class="hero">
+    <div class="panel mark-big">
+      <div class="lock"><span id="q1"></span><span class="word">ode</span></div>
+      <div class="tag">the menu is you.</div>
+    </div>
+    <div class="stack">
+      <div class="panel mark-honey" id="q2"></div>
+      <div class="mark-row">
+        <div class="panel appicon"><div class="ic" id="q3"></div></div>
+        <div class="panel tiny"><div class="row" id="q4"></div><div style="font-size:12px;color:var(--moss)">works tiny, in one colour</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="why">
+    <div><h4>A quotation, opening</h4><p>Every drink is an ode, and an ode starts by quoting someone: you. The mark is the moment before your words.</p></div>
+    <div><h4>Two drops</h4><p>Look again and it's two drops falling into a cup, honey and cherry. One shape, two meanings, no coffee cliché.</p></div>
+    <div><h4>Owns a symbol</h4><p>No café owns the quotation mark. Like the arches or the swoosh, it can stand alone on a cup, a sign, a sleeve, without the name.</p></div>
+  </div>
+
+  <div class="lbl">02 <b>the branding, in four ads</b></div>
+  <div class="posters">
+    <div>
+      <div class="poster p1"><h3>no two<br><em>alike.</em></h3><div class="art" id="latte"></div>
+        <div class="cap"><span class="small">the menu is you.</span><span class="sign" id="s1"></span></div></div>
+      <p class="why-ad">Latte art pressed like a fingerprint. Your drink is as unique as you are.</p>
+    </div>
+    <div>
+      <div class="poster p2"><div class="menu">
+        <h5>menu</h5>
+        <div class="m"><span>espresso</span><span>420</span></div>
+        <div class="m"><span>cappuccino</span><span>590</span></div>
+        <div class="m"><span>caramel latte</span><span>690</span></div>
+        <div class="m"><span>iced mocha</span><span>720</span></div>
+        <div class="m"><span>chai latte</span><span>550</span></div>
+        <div class="m you"><span>you</span><span>made to order</span></div>
+      </div>
+        <div class="cap"><span class="small" style="color:var(--moss)">we crossed out the menu.</span><span class="sign" id="s2"></span></div></div>
+      <p class="why-ad">The whole idea in one picture: every item crossed out except one.</p>
+    </div>
+    <div>
+      <div class="poster p3"><h3>same café.<br><em>different you.</em></h3>
+        <div class="pair"><div><div class="pic" id="mon"></div><p class="t"><b>Fog Over Monday</b>tired, 8:04 am</p></div><div><div class="pic" id="fri"></div><p class="t"><b>Golden Hour Spritz</b>giddy, friday 6:30 pm</p></div></div>
+        <div class="cap"><span></span><span class="sign" id="s3"></span></div></div>
+      <p class="why-ad">The same person on two days gets two different drinks. Shows the product without explaining it.</p>
+    </div>
+    <div>
+      <div class="poster p4"><div class="q" id="q5"></div><h3>tell us<br>how you <em>feel.</em></h3><p style="font:300 italic 22px var(--serif);margin:14px 0 0;opacity:.9">we'll write the rest.</p>
+        <div class="cap"><span class="small">order at any ode café</span><span class="sign" id="s4"></span></div></div>
+      <p class="why-ad">The mark used as the opening of a sentence the customer finishes.</p>
+    </div>
+  </div>
+
+  <div class="lbl">03 <b>things people keep</b></div>
+  <div class="things">
+    <div class="thing" style="background:linear-gradient(160deg,#F3EADC,#E5D7C3)" id="cup"></div>
+    <div class="thing" style="background:#3A3530" id="sleeve"></div>
+    <div class="thing" style="background:var(--cream)" id="stamp"></div>
+  </div>
+
+  <div class="lbl">04 <b>painted ingredients</b> <span style="text-transform:none;letter-spacing:0">light, shadow, translucency, no outlines</span></div>
+  <div class="painted" id="painted"></div>
+
+  <div class="lbl">05 <b>the print</b> <span style="text-transform:none;letter-spacing:0">a second signature: your taste profile, and the seal on share cards</span></div>
+  <div class="secondary">
+    <div class="panel" style="display:grid;place-items:center" id="print"></div>
+    <div class="panel"><div style="display:flex;gap:26px;align-items:center" id="prints"></div><p>Every customer's taste profile draws its own print from their drinks, so <i>your</i> print is literally yours. The wax seal closes every share card, like a letter written to you.</p></div>
+  </div>
+</div>
+
+<script src="marks.js"></script>
+<script src="portrait.js"></script>
+<script src="painted.js"></script>
+<script>
+  const { quoteMark, printMark, sealMark, printPaths } = OdeMarks;
+  const { portrait, INGREDIENT_COLORS: C } = OdePortrait;
+  const P = OdePainted;
+  const $ = (id) => document.getElementById(id);
+
+  $('q1').innerHTML = quoteMark({ size: 120 });
+  $('q2').innerHTML = quoteMark({ size: 170, a: '#FAF6F0', b: '#3A3530' });
+  $('q3').innerHTML = quoteMark({ size: 84 });
+  $('q4').innerHTML = [quoteMark({ size: 44, a: '#3A3530', b: '#3A3530' }), quoteMark({ size: 30, a: '#C4858C', b: '#C4858C' }), quoteMark({ size: 20 })].join('');
+  const sign = (a, b, col) => `${quoteMark({ size: 26, a, b })}<span class="word" style="color:${col}">ode</span>`;
+  $('s1').innerHTML = sign('#D4A55A', '#C4858C', '#3A3530');
+  $('s2').innerHTML = sign('#D4A55A', '#C4858C', '#3A3530');
+  $('s3').innerHTML = sign('#D4A55A', '#C4858C', '#FAF6F0');
+  $('s4').innerHTML = sign('#FAF6F0', '#3A3530', '#FAF6F0');
+  $('q5').innerHTML = quoteMark({ size: 210, a: '#FAF6F0', b: '#3A3530' });
+
+  // latte with fingerprint art, seen from above
+  const fp = printPaths({ cx: 150, cy: 150, R: 92, loops: 9, seed: 11 });
+  $('latte').innerHTML = `<svg viewBox="0 0 300 300" width="88%" style="max-width:420px">
+    <defs><radialGradient id="cr" cx=".45" cy=".42" r=".7"><stop offset="0" stop-color="#D9A877"/><stop offset=".7" stop-color="#B57A4C"/><stop offset="1" stop-color="#7B4B2C"/></radialGradient>
+    <filter id="mb"><feGaussianBlur stdDeviation="1.1"/></filter><filter id="sd"><feGaussianBlur stdDeviation="10"/></filter>
+    <clipPath id="cc"><circle cx="150" cy="150" r="98"/></clipPath></defs>
+    <ellipse cx="160" cy="165" rx="140" ry="138" fill="#3A3530" opacity=".18" filter="url(#sd)"/>
+    <circle cx="150" cy="150" r="138" fill="#FBF7F1"/><circle cx="150" cy="150" r="128" fill="none" stroke="#E6DCCD" stroke-width="2"/>
+    <circle cx="150" cy="150" r="112" fill="#F7F2EA"/><circle cx="150" cy="150" r="104" fill="#EDE3D4"/>
+    <circle cx="150" cy="150" r="98" fill="url(#cr)"/>
+    <g clip-path="url(#cc)"><path d="${fp}" fill="none" stroke="#FFF6E8" stroke-width="7.5" stroke-linecap="round" filter="url(#mb)" opacity=".95"/></g>
+    <circle cx="150" cy="150" r="98" fill="none" stroke="#5E3720" stroke-opacity=".35" stroke-width="2"/>
+    <path d="M276 160h12a12 12 0 0 1 0 24h-14" fill="none" stroke="#FBF7F1" stroke-width="10" stroke-linecap="round"/></svg>`;
+
+  $('mon').innerHTML = portrait({ colors: ['#9E8E80', '#C7B8A8', '#DCEBF0', '#F3EADB'], mood: 'tired', seed: 'fog', width: 240, height: 300, id: 'm' });
+  $('fri').innerHTML = portrait({ colors: [C.orange, C.hibiscus, C.lemon, C.soda], mood: 'playful', seed: 'golden', width: 240, height: 300, id: 'f' });
+
+  // cup, sleeve, stamp
+  $('cup').innerHTML = `<svg viewBox="0 0 300 340" width="78%"><defs><linearGradient id="cupg" x1="0" x2="1"><stop offset="0" stop-color="#EFE7DA"/><stop offset=".35" stop-color="#FFFDF9"/><stop offset="1" stop-color="#E2D8C8"/></linearGradient><filter id="cs"><feGaussianBlur stdDeviation="8"/></filter></defs>
+    <ellipse cx="150" cy="318" rx="92" ry="12" fill="#3A3530" opacity=".2" filter="url(#cs)"/>
+    <path d="M66 70h168l-20 240a10 10 0 0 1-10 9H96a10 10 0 0 1-10-9z" fill="url(#cupg)"/>
+    <path d="M58 52h184v20H58z" fill="#3A3530" rx="6"/><path d="M70 40h160l6 12H64z" fill="#4A443E"/>
+    <g transform="translate(103 140) scale(.95)">${quoteMark({ size: 100 }).replace(/<svg[^>]*>|<\/svg>/g, '')}</g>
+    <text x="150" y="268" text-anchor="middle" font-family="Fraunces" font-size="15" fill="#8A8A72" font-style="italic">the menu is you.</text></svg>`;
+  $('sleeve').innerHTML = `<div style="text-align:center;color:#FAF6F0"><div style="display:inline-flex;align-items:flex-start;gap:4px">${quoteMark({ size: 60 })}<span class="word" style="font-size:96px">ode</span></div><p style="font:300 italic 19px var(--serif);margin:14px 0 0;opacity:.8">an ode, written for you.</p><p style="font:500 11px var(--sans);letter-spacing:.3em;margin:26px 0 0;opacity:.55">THE MENU IS YOU</p></div>`;
+  $('stamp').innerHTML = `<div style="display:grid;place-items:center;gap:16px">${sealMark({ size: 170 })}<span style="font:300 italic 18px var(--serif);color:var(--moss)">sealed for you</span></div>`;
+
+  $('painted').innerHTML = [['lychee', P.lychee()], ['lemon', P.lemonSlice()], ['mint', P.mintSprig()], ['coffee', P.coffeeBeans()]].map(([n, s]) => `<div>${s}${n}</div>`).join('');
+  $('print').innerHTML = printMark({ size: 200 });
+  $('prints').innerHTML = [printMark({ size: 110, ink: '#FAF6F0', disc: 'glow', ring: false, id: 'a1' }), printMark({ size: 110, ink: '#3A3530', disc: '#F5E3C0', id: 'a2' }), sealMark({ size: 120 })].join('');
+</script>
+</body>
+</html>
