@@ -4,6 +4,7 @@ import { CafeBar, Painted } from '../components/Brand';
 import { Cup } from '../components/Three';
 import Icon from '../components/Icon';
 import { creations, orders } from '../lib/store';
+import { api } from '../lib/api';
 import './ode.css';
 
 const SIZES = [['regular', 'regular', 0], ['large', 'large', 150]];
@@ -14,6 +15,8 @@ export default function Ode() {
   const c = creations.get(id);
   const [saved, setSaved] = useState(() => creations.isSaved(id));
   const [size, setSize] = useState('regular');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
 
   if (!c) return <main className="screen"><CafeBar /><p className="muted">This ode isn't on this device. <Link to="/">Write a new one</Link>.</p></main>;
 
@@ -25,10 +28,17 @@ export default function Ode() {
     if (saved) creations.unsave(c.id); else creations.save(c);
     setSaved(!saved);
   }
-  function order() {
+  async function order() {
     if (!saved) creations.save(c);
-    const o = orders.place(c, size);
-    navigate('/order/' + o.code);
+    if (c.local) return navigate('/order/' + orders.place(c, size).code);
+    setBusy(true); setErr('');
+    try {
+      const o = await api.order(c.id, size);
+      navigate('/order/' + o.id, { state: o });
+    } catch {
+      setErr('That did not go through. Try once more, or order at the counter.');
+      setBusy(false);
+    }
   }
 
   return (
@@ -67,9 +77,10 @@ export default function Ode() {
             <button key={sid} type="button" role="radio" aria-checked={size === sid} onClick={() => setSize(sid)}>{label}{add ? <small> +{add}</small> : null}</button>
           ))}
         </div>
-        <button type="button" className="btn btn--cherry btn--block btn--split" onClick={order}>
+        <button type="button" className="btn btn--cherry btn--block btn--split" onClick={order} disabled={busy}>
           <span>Order this</span><span>Rs {price.toLocaleString('en-PK')}</span>
         </button>
+        {err && <p className="ode__err" role="alert">{err}</p>}
         <button type="button" className="ode__again" onClick={() => navigate('/')}>not quite you? write another</button>
       </div>
     </main>

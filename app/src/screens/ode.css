@@ -24,3 +24,4 @@
 .ode__again { border: 0; background: none; padding: 8px; font: 500 14.5px var(--sans); color: var(--moss-deep); text-decoration: underline; text-decoration-color: var(--cherry); text-underline-offset: 4px; }
 .ode__heart.on { color: var(--cherry-deep); animation: pop .4s var(--spring); }
 @keyframes pop { 40% { transform: scale(1.18); } }
+.ode__err { margin: 0; text-align: center; font-size: 14px; color: var(--cherry-deep); }

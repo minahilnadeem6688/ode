@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Lockup, Painted } from '../components/Brand';
 import Icon from '../components/Icon';
 import { orders, stock } from '../lib/store';
+import { api, online } from '../lib/api';
 import { cafe, pantry, DIETS } from '../data/demoCafe';
 import './barista.css';
 
@@ -24,22 +25,72 @@ function chime() {
   } catch { /* no audio */ }
 }
 
-export default function Barista() {
-  const [list, setList] = useState(orders.all);
-  const [out, setOut] = useState(stock.out);
-  const [pantryOpen, setPantryOpen] = useState(false);
-  const [, tick] = useState(0);
-  const seen = useRef(new Set(orders.all().map((o) => o.code)));
+const readKey = () => { try { return localStorage.getItem('ode.staff') || ''; } catch { return ''; } };
 
-  useEffect(() => orders.subscribe((all) => {
-    if (all.some((o) => !seen.current.has(o.code))) chime();
-    all.forEach((o) => seen.current.add(o.code));
+// Orders and stock, from the API when it is there, otherwise shared between tabs on this device.
+function useBoard() {
+  const [mode, setMode] = useState(null); // 'online' | 'device'
+  const [key, setKey] = useState(readKey);
+  const [problem, setProblem] = useState(''); // '' | 'key' | message
+  const [list, setList] = useState([]);
+  const [out, setOut] = useState([]);
+  const seen = useRef(null);
+
+  const take = (all, nextOut) => {
+    const codes = all.map((o) => o.code + o.placedAt);
+    if (seen.current && codes.some((c) => !seen.current.has(c))) chime();
+    seen.current = new Set(codes);
     setList(all);
-  }), []);
+    if (nextOut) setOut(nextOut);
+  };
+
+  useEffect(() => { online().then((on) => setMode(on ? 'online' : 'device')); }, []);
+
+  useEffect(() => {
+    if (mode !== 'device') return undefined;
+    take(orders.all(), stock.out());
+    return orders.subscribe((all) => take(all));
+  }, [mode]);
+
+  const refresh = async () => {
+    try {
+      const b = await api.board(key);
+      take(b.orders, b.out);
+      setProblem('');
+    } catch (e) {
+      setProblem(e.status === 401 ? 'key' : e.message);
+    }
+  };
+  useEffect(() => {
+    if (mode !== 'online') return undefined;
+    let live = true, timer;
+    const loop = async () => { await refresh(); if (live) timer = setTimeout(loop, document.hidden ? 15000 : 4000); };
+    loop();
+    return () => { live = false; clearTimeout(timer); };
+  }, [mode, key]);
+
+  const advance = async (o) => {
+    if (mode === 'device') { orders.setStatus(o.code, NEXT[o.status]); return setList(orders.all()); }
+    setList((l) => l.map((x) => (x.id === o.id ? { ...x, status: NEXT[o.status] } : x)));
+    try { await api.advance(key, o.id, NEXT[o.status]); } catch { /* someone else moved it; the refresh shows where it is */ }
+    refresh();
+  };
+  const toggleStock = async (id) => {
+    if (mode === 'device') { stock.toggle(id); return setOut(stock.out()); }
+    try { setOut((await api.stock(key, id, !out.includes(id))).out); } catch (e) { setProblem(e.status === 401 ? 'key' : e.message); }
+  };
+  const saveKey = (k) => { try { localStorage.setItem('ode.staff', k); } catch { /* private mode */ } setKey(k); };
+
+  return { mode, list, out, problem, advance, toggleStock, saveKey };
+}
+
+export default function Barista() {
+  const { mode, list, out, problem, advance, toggleStock, saveKey } = useBoard();
+  const [pantryOpen, setPantryOpen] = useState(false);
+  const [draftKey, setDraftKey] = useState('');
+  const [, tick] = useState(0);
   useEffect(() => { const t = setInterval(() => tick((n) => n + 1), 30000); return () => clearInterval(t); }, []);
 
-  const advance = (o) => { orders.setStatus(o.code, NEXT[o.status]); setList(orders.all()); };
-  const toggleStock = (id) => { stock.toggle(id); setOut(stock.out()); };
   const dietLabel = Object.fromEntries(DIETS);
 
   return (
@@ -62,7 +113,16 @@ export default function Barista() {
         </section>
       )}
 
-      <div className="board__cols">
+      {problem === 'key' && (
+        <form className="board__key" onSubmit={(e) => { e.preventDefault(); saveKey(draftKey.trim()); }}>
+          <label htmlFor="staffkey">Café key</label>
+          <p>Enter the key from your ode setup to see this café's orders on this screen.</p>
+          <div><input id="staffkey" type="password" autoComplete="off" value={draftKey} onChange={(e) => setDraftKey(e.target.value)} /><button type="submit" className="btn btn--honey">Open board</button></div>
+        </form>
+      )}
+      {problem && problem !== 'key' && <p className="board__problem" role="alert">{problem}</p>}
+
+      {problem !== 'key' && <div className="board__cols">
         {COLUMNS.map(([status, label, action]) => {
           const col = list.filter((o) => o.status === status);
           return (
@@ -73,7 +133,7 @@ export default function Barista() {
                 const c = o.creation;
                 const flags = [...(c.input.diet || []).map((d) => dietLabel[d]), c.input.notes].filter(Boolean);
                 return (
-                  <article key={o.code} className="ticket">
+                  <article key={o.id || o.code} className="ticket">
                     <div className="ticket__head"><b className="ticket__code">{o.code}</b><span>{ago(o.placedAt)}</span></div>
                     <h3 className="ticket__name">{c.name}</h3>
                     <p className="ticket__meta">{o.size} · {c.recipe.temperature} · {c.recipe.method} · ~{Math.round(c.recipe.prepSeconds / 60 * 10) / 10} min</p>
@@ -89,7 +149,7 @@ export default function Barista() {
             </section>
           );
         })}
-      </div>
+      </div>}
     </main>
   );
 }

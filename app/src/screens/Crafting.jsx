@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CafeBar } from '../components/Brand';
 import { Cup } from '../components/Three';
-import { craft } from '../lib/craft';
+import { craft as craftHere } from '../lib/craft';
+import { craft as craftOnline, online } from '../lib/api';
 import { draft, creations } from '../lib/store';
 import './crafting.css';
 
@@ -16,9 +17,17 @@ export default function Crafting() {
   useEffect(() => {
     if (started.current) return; // StrictMode runs effects twice in development
     started.current = true;
-    craft(draft.get(), setStage).then((c) => {
+    const input = draft.get();
+    const began = Date.now();
+    (async () => {
+      if (await online()) {
+        try { return await craftOnline(input, setStage); } catch { setStage(0); }
+      }
+      return { ...(await craftHere(input, setStage)), local: true };
+    })().then((c) => {
       creations.remember(c);
-      setTimeout(() => navigate('/ode/' + c.id, { replace: true }), 500);
+      // never rush it: the cup takes a few seconds to fill
+      setTimeout(() => navigate('/ode/' + c.id, { replace: true }), Math.max(500, 3200 - (Date.now() - began)));
     });
   }, [navigate]);
 

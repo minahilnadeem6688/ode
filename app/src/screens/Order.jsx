@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { CafeBar, Portrait } from '../components/Brand';
 import { Ambient } from '../components/Three';
 import Icon from '../components/Icon';
 import { creations, orders } from '../lib/store';
+import { api } from '../lib/api';
 import './order.css';
 
 const STEPS = [['new', 'received'], ['making', 'being made'], ['ready', 'ready for you']];
@@ -12,18 +13,39 @@ const CHIPS = ['perfect', 'too sweet', 'not sweet enough', 'too strong', 'would 
 export default function Order() {
   const { code } = useParams();
   const navigate = useNavigate();
-  const [o, setO] = useState(() => orders.get(code));
+  const { state } = useLocation();
+  const local = /^\d{3}$/.test(code); // on-device orders use their code; online ones a private id
+  const [o, setO] = useState(() => (local ? orders.get(code) : state));
+  const [missing, setMissing] = useState(false);
   const [rating, setRating] = useState(0);
   const [chips, setChips] = useState([]);
   const [thanks, setThanks] = useState(false);
 
-  useEffect(() => orders.subscribe(() => setO(orders.get(code))), [code]);
+  useEffect(() => {
+    if (local) return orders.subscribe(() => setO(orders.get(code)));
+    let live = true, timer;
+    const poll = async () => {
+      try {
+        const next = await api.orderStatus(code);
+        if (!live) return;
+        setO(next);
+        if (next.status === 'collected') return;
+      } catch (e) {
+        if (e.status === 404) return live && setMissing(true);
+      }
+      timer = setTimeout(poll, document.hidden ? 15000 : 4000);
+    };
+    poll();
+    return () => { live = false; clearTimeout(timer); };
+  }, [code, local]);
 
+  if (!o && !local && !missing) return <main className="screen order" style={{ '--bg': 'linear-gradient(160deg, #FBF7F1, #F1E9DC)' }}><Ambient variant="order" /><CafeBar /></main>;
   if (!o) return <main className="screen"><CafeBar /><p className="muted">We couldn't find that order. <Link to="/">Start again</Link>.</p></main>;
-  const at = STEPS.findIndex((s) => s[0] === o.status);
+  const at = o.status === 'collected' ? STEPS.length - 1 : STEPS.findIndex((s) => s[0] === o.status);
 
   function submit() {
     creations.rate(o.creationId, rating, chips);
+    if (!local) api.rate(o.creationId, rating, chips).catch(() => {});
     setThanks(true);
   }
 
@@ -38,16 +60,16 @@ export default function Order() {
 
       <div className="order__card card rise" style={{ '--d': '.16s' }}>
         <span className="order__thumb"><Portrait creation={o.creation} width={120} height={120} id="ot" /></span>
-        <div><b className="order__name">{o.creation.name}</b><small>{o.size} · Rs {(o.creation.price + (o.size === 'large' ? 150 : 0)).toLocaleString('en-PK')}</small></div>
+        <div><b className="order__name">{o.creation.name}</b><small>{o.size} · Rs {(o.price ?? o.creation.price + (o.size === 'large' ? 150 : 0)).toLocaleString('en-PK')}</small></div>
       </div>
 
       <ol className="order__steps rise" style={{ '--d': '.22s' }} aria-live="polite">
         {STEPS.map(([id, label], i) => (
-          <li key={id} className={i < at ? 'done' : i === at ? 'now' : ''}><i>{i < at || o.status === 'ready' ? <Icon name="check" size={14} width={2.4} /> : null}</i>{label}</li>
+          <li key={id} className={i < at ? 'done' : i === at ? 'now' : ''}><i>{i < at || o.status === 'ready' || o.status === 'collected' ? <Icon name="check" size={14} width={2.4} /> : null}</i>{label}</li>
         ))}
       </ol>
 
-      {o.status === 'ready' && !thanks && (
+      {(o.status === 'ready' || o.status === 'collected') && !thanks && (
         <section className="order__rate card rise">
           <p className="display order__ask">how did it <em className="cherry">feel?</em></p>
           <div className="order__stars" role="radiogroup" aria-label="Rating">
