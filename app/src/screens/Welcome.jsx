@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CafeBar, Mark } from '../components/Brand';
+import { Ambient } from '../components/Three';
 import { draft } from '../lib/store';
 import { EXAMPLES } from '../data/demoCafe';
 import './welcome.css';
@@ -25,6 +26,7 @@ export default function Welcome() {
       <span className="blob" style={{ width: 240, height: 240, right: -70, top: 40, background: 'rgba(212,165,90,.18)' }} />
       <span className="blob" style={{ width: 200, height: 200, left: -80, bottom: 120, background: 'rgba(196,133,140,.16)' }} />
 
+      <Ambient variant="welcome" />
       <CafeBar />
 
       <section className="welcome__hero">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { CafeBar, Portrait } from '../components/Brand';
+import { Ambient } from '../components/Three';
 import Icon from '../components/Icon';
 import { creations, orders } from '../lib/store';
 import './order.css';
@@ -28,6 +29,7 @@ export default function Order() {
 
   return (
     <main className="screen order" style={{ '--bg': 'linear-gradient(160deg, #FBF7F1, #F1E9DC)' }}>
+      <Ambient variant="order" />
       <CafeBar left={<button type="button" className="iconbtn" aria-label="Home" onClick={() => navigate('/')}><Icon name="close" /></button>} />
 
       <p className="eyebrow order__lbl rise">your order code</p>

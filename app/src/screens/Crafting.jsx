@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CafeBar } from '../components/Brand';
-import { DROP } from '../brand/marks';
+import { Cup } from '../components/Three';
 import { craft } from '../lib/craft';
 import { draft, creations } from '../lib/store';
 import './crafting.css';
@@ -25,12 +25,8 @@ export default function Crafting() {
   return (
     <main className="screen crafting" style={{ '--bg': 'linear-gradient(160deg, #EFECE2, #E5DFD2)' }}>
       <CafeBar />
-      <div className="crafting__stage" data-stage={stage} aria-hidden="true">
-        <span className="crafting__halo" />
-        <span className="crafting__cup"><span className="crafting__liquid" /></span>
-        <span className="crafting__ripple r1" /><span className="crafting__ripple r2" /><span className="crafting__ripple r3" />
-        <svg className="crafting__drop d1" viewBox="0 0 50 70"><path d={DROP} transform="translate(-4 -8)" fill="#D4A55A" /></svg>
-        <svg className="crafting__drop d2" viewBox="0 0 50 70"><path d={DROP} transform="translate(-4 -8)" fill="#C4858C" /></svg>
+      <div className="crafting__stage3d" aria-hidden="true">
+        <Cup mode="crafting" stage={stage} colors={['#D9B27A', '#E3AAB2', '#C99A6A', '#EED3C0']} className="crafting__canvas" />
       </div>
 
       <h1 className="display crafting__title">writing your<br /><em>ode…</em></h1>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { CafeBar, Painted, Portrait } from '../components/Brand';
+import { CafeBar, Painted } from '../components/Brand';
+import { Cup } from '../components/Three';
 import Icon from '../components/Icon';
 import { creations, orders } from '../lib/store';
 import './ode.css';
@@ -43,7 +44,7 @@ export default function Ode() {
         }
       />
 
-      <div className="ode__art fade"><Portrait creation={c} width={420} height={420} id="hero" /></div>
+      <div className="ode__art fade"><Cup creation={c} className="ode__cup" /><span className="ode__hint">drag to turn</span></div>
 
       <p className="eyebrow ode__label rise" style={{ '--d': '.15s' }}>your ode</p>
       <h1 className="display ode__name rise" style={{ '--d': '.22s' }}>{c.name}</h1>
