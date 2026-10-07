@@ -107,13 +107,14 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
   cup.add(liquid);
 
   const steam = [];
-  if (hot && mode === 'hero') {
+  if (mode === 'hero') {
     for (let i = 0; i < 2; i++) {
       const m = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 1.6), new THREE.ShaderMaterial({
         uniforms: { uTime: uniforms.uTime, uSeed: { value: i * 3.3 } }, transparent: true, depthWrite: false,
         vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }', fragmentShader: STEAM_FRAG,
       }));
       m.position.set(i ? 0.18 : -0.15, 1.65, i ? -0.1 : 0.1);
+      m.visible = hot;
       scene.add(m);
       steam.push(m);
     }
@@ -132,6 +133,8 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
     });
   }
   let stage = 0, target = mode === 'crafting' ? 0 : 1;
+  // colours glide to new ones instead of jumping (the website's live demo changes them)
+  const goal = [uniforms.uC0, uniforms.uC1, uniforms.uC2, uniforms.uC3].map((u) => u.value.clone());
 
   // turning the cup by hand (hero)
   let spin = 0, vel = 0, dragging = false, lastX = 0;
@@ -148,6 +151,7 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
   const still = reducedMotion();
   st.setFrame((t) => {
     uniforms.uTime.value = t;
+    [uniforms.uC0, uniforms.uC1, uniforms.uC2, uniforms.uC3].forEach((u, i) => u.value.lerp(goal[i], still ? 1 : 0.04));
     uniforms.uIntensity.value += (target - uniforms.uIntensity.value) * 0.03;
     if (still) uniforms.uIntensity.value = target;
     if (mode === 'hero') {
@@ -173,6 +177,13 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
 
   return {
     setStage(n) { stage = n; target = Math.min(1, n / 3); },
+    setColors(list) {
+      const next = [...list, ...list, ...list].slice(0, 4);
+      next.forEach((c, i) => goal[i].set(c));
+      uniforms.uDropT.value = uniforms.uTime.value; // a ripple as the new drink pours in
+      st.refresh();
+    },
+    setHot(h) { steam.forEach((m) => { m.visible = h; }); st.refresh(); },
     dispose() {
       canvas.removeEventListener('pointerdown', down);
       canvas.removeEventListener('pointermove', move);

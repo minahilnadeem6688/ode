@@ -6,7 +6,7 @@ import { portrait, INGREDIENT_COLORS, mix } from '../brand/portrait';
 import { quoteMark, sealMark } from '../brand/marks';
 import { cafe } from '../data/demoCafe';
 
-const svgImage = (svg) => new Promise((resolve, reject) => {
+export const svgImage = (svg) => new Promise((resolve, reject) => {
   const img = new Image();
   img.onload = () => resolve(img);
   img.onerror = reject;
@@ -82,7 +82,7 @@ export async function drawShareCard(canvas, c, format = 'story') {
   }
 }
 
-function roundRect(ctx, x, y, w, h, r) {
+export function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);

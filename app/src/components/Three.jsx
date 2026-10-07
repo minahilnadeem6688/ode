@@ -32,19 +32,24 @@ export function Cup({ creation, colors, mode = 'hero', stage = 0, hot, className
   const api = useRef(null);
   const [fallback] = useState(() => !canWebGL());
   const cols = colors || (creation ? drinkColors(creation) : undefined);
-  const key = (cols || []).join() + mode;
+  const colorKey = (cols || []).join();
+  const isHot = hot ?? creation?.recipe.temperature === 'hot';
 
   useEffect(() => {
     if (fallback) return undefined;
     let cancelled = false;
     import('../three/cup').then(({ mountCup }) => {
       if (cancelled || !ref.current) return;
-      api.current = mountCup(ref.current, { colors: cols, mode, hot: hot ?? creation?.recipe.temperature === 'hot' });
+      api.current = mountCup(ref.current, { colors: cols, mode, hot: isHot });
       api.current.setStage(stage);
     });
     return () => { cancelled = true; api.current?.dispose(); api.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, fallback]);
+  }, [mode, fallback]);
+
+  // a new drink in the same cup: the colours glide over, the steam follows the temperature
+  useEffect(() => { if (cols) api.current?.setColors(cols); }, [colorKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { api.current?.setHot(isHot); }, [isHot]);
 
   useEffect(() => { api.current?.setStage(stage); }, [stage]);
 

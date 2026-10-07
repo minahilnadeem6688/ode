@@ -13,7 +13,12 @@ A mood menu for cafés. A customer scans a QR code, says how they feel, and gets
 | `design/` | Brand boards and the brand's generators: the quotation-drop mark, flavour portraits, painted ingredients |
 
 ### Website
-- **`/`**: what ode is, how it works, a gallery of odes, features for cafés, the free pilot, FAQ and a form that saves café enquiries to the database (`leads` table)
+- **`/`**: the live hero (type a feeling and a drink is written on the spot, the 3D cup changes with it), why cafés choose ode, the shelf
+- **`/how-it-works`**: six steps beside a live phone running the real menu, and how ode keeps the rules strict
+- **`/for-cafes`**: a live order board, a pantry you can switch out of stock, a price calculator and a table card designer with a working QR code
+- **`/wall`**: a Pinterest-style wall of odes, filterable by mood, each opening into its ingredients and price
+- **`/pricing`**: the free pilot and the monthly plan
+- **`/get-ode`**: the pilot request form (saved to the `leads` table)
 
 ### Customer (`/c/demo`)
 - **Tell us how you feel**: free text or an example, then optional mood, temperature, sweetness and flavours

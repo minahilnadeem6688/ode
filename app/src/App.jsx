@@ -1,5 +1,11 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import Home from './screens/Home';
+import Site from './site/Site';
+import Home from './site/Home';
+import How from './site/How';
+import Cafes from './site/Cafes';
+import Wall from './site/Wall';
+import Pricing from './site/Pricing';
+import GetOde from './site/GetOde';
 import Welcome from './screens/Welcome';
 import Tune from './screens/Tune';
 import Crafting from './screens/Crafting';
@@ -18,7 +24,15 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route element={<Site />}>
+          <Route index element={<Home />} />
+          <Route path="how-it-works" element={<How />} />
+          <Route path="for-cafes" element={<Cafes />} />
+          <Route path="wall" element={<Wall />} />
+          <Route path="pricing" element={<Pricing />} />
+          <Route path="get-ode" element={<GetOde />} />
+          <Route path="*" element={<Home />} />
+        </Route>
         <Route path="/c/:cafe" element={<Phone><Welcome /></Phone>} />
         <Route path="/tune" element={<Phone><Tune /></Phone>} />
         <Route path="/crafting" element={<Phone><Crafting /></Phone>} />
@@ -28,7 +42,6 @@ export default function App() {
         <Route path="/me" element={<Phone><Mine /></Phone>} />
         <Route path="/barista" element={<Barista />} />
         <Route path="/kit" element={<Kit />} />
-        <Route path="*" element={<Home />} />
       </Routes>
     </BrowserRouter>
   );

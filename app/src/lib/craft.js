@@ -60,9 +60,9 @@ export function readMood({ text = '', moods = [], temp, sweetness = 5, flavours 
 }
 
 // Hard rules first: only what this café has, in this temperature, safe for this person.
-export function allowedPantry(mood) {
+export function allowedPantry(mood, outList = stock.out()) {
   const d = new Set(mood.diet);
-  const out = new Set(stock.out());
+  const out = new Set(outList);
   return pantry.filter((i) => !out.has(i.id) && i.temps.includes(mood.temperature)
     && !(d.has('vegan') && (i.allergens?.includes('dairy') || i.notVegan))
     && !(d.has('dairy') && i.allergens?.includes('dairy'))
@@ -72,9 +72,9 @@ export function allowedPantry(mood) {
 }
 
 // Stage 2: build the recipe
-export function buildRecipe(mood, seed) {
+export function buildRecipe(mood, seed, outList) {
   const r = seeded(seed);
-  const ok = allowedPantry(mood);
+  const ok = allowedPantry(mood, outList);
   const score = (i) => i.families.filter((f) => mood.families.includes(f)).length + r() * 0.6;
   const best = (cat) => ok.filter((i) => cat.includes(i.category)).sort((a, b) => score(b) - score(a));
 
