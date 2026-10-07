@@ -25,3 +25,16 @@
 .ode__heart.on { color: var(--cherry-deep); animation: pop .4s var(--spring); }
 @keyframes pop { 40% { transform: scale(1.18); } }
 .ode__err { margin: 0; text-align: center; font-size: 14px; color: var(--cherry-deep); }
+
+@media (min-width: 760px) {
+  .ode__name { font-size: 60px; }
+}
+@media (min-width: 1100px) {
+  .screen.ode { display: grid; grid-template-columns: 1.1fr 1fr; column-gap: 64px; align-content: start; }
+  .ode > header { grid-column: 1 / -1; }
+  .ode > *:not(header):not(.ode__art) { grid-column: 2; }
+  .ode__art { grid-column: 1; grid-row: 2 / span 7; width: 100%; margin: 0; aspect-ratio: 1; position: sticky; top: 24px; align-self: start; }
+  .ode__label { margin-top: 40px; }
+  .ode__name { font-size: 72px; }
+  .ode__order { margin-top: 30px; }
+}

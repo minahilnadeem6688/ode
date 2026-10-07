@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { MENU } from '../lib/paths';
 import { CafeBar, Painted } from '../components/Brand';
 import { Cup } from '../components/Three';
 import Icon from '../components/Icon';
@@ -18,7 +19,7 @@ export default function Ode() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
 
-  if (!c) return <main className="screen"><CafeBar /><p className="muted">This ode isn't on this device. <Link to="/">Write a new one</Link>.</p></main>;
+  if (!c) return <main className="screen"><CafeBar /><p className="muted">This ode isn't on this device. <Link to={MENU}>Write a new one</Link>.</p></main>;
 
   const extra = SIZES.find((s) => s[0] === size)[2];
   const price = c.price + extra;
@@ -45,7 +46,7 @@ export default function Ode() {
     <main className="screen ode" style={{ '--bg': 'linear-gradient(165deg, #F8EEF0 0%, #F1E1E3 55%, #EAD8DA 100%)' }}>
       <span className="blob" style={{ width: 230, height: 230, right: -80, top: 120, background: 'rgba(196,133,140,.2)' }} />
       <CafeBar
-        left={<button type="button" className="iconbtn" aria-label="Write another" onClick={() => navigate('/')}><Icon name="close" /></button>}
+        left={<button type="button" className="iconbtn" aria-label="Write another" onClick={() => navigate(MENU)}><Icon name="close" /></button>}
         right={
           <span style={{ display: 'flex', gap: 10 }}>
             <button type="button" className="iconbtn" aria-label="Share" onClick={() => navigate('/share/' + c.id)}><Icon name="share" /></button>
@@ -81,7 +82,7 @@ export default function Ode() {
           <span>Order this</span><span>Rs {price.toLocaleString('en-PK')}</span>
         </button>
         {err && <p className="ode__err" role="alert">{err}</p>}
-        <button type="button" className="ode__again" onClick={() => navigate('/')}>not quite you? write another</button>
+        <button type="button" className="ode__again" onClick={() => navigate(MENU)}>not quite you? write another</button>
       </div>
     </main>
   );

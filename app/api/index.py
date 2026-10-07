@@ -2,6 +2,7 @@
 ode API. Served by Vercel next to the app, so every route lives under /api.
 
   GET   /api/health                                  what is switched on
+  POST  /api/leads                                   a café asking for ode (website form)
   GET   /api/cafes/{cafe}                            café, pantry and what is out of stock
   POST  /api/cafes/{cafe}/craft                      write an ode (streams each stage as it finishes)
   GET   /api/creations/{id}                          one ode, as the customer sees it
@@ -66,6 +67,15 @@ class StatusIn(BaseModel):
     status: Literal["making", "ready", "collected"]
 
 
+class LeadIn(BaseModel):
+    cafe_name: str = Field(min_length=2, max_length=80)
+    name: str = Field(min_length=2, max_length=60)
+    city: str = Field(min_length=2, max_length=40)
+    contact: str = Field(min_length=5, max_length=80)  # phone or email, whichever they prefer
+    message: str = Field("", max_length=600)
+    website: str = Field("", max_length=0)  # left empty by people; bots fill it in
+
+
 class StockIn(BaseModel):
     out: bool
 
@@ -104,6 +114,14 @@ def slow_down(request):
 def health():
     m = model()
     return {"ok": True, "model": m.name if m else None, "store": store().kind}
+
+
+@app.post("/api/leads")
+def lead(body: LeadIn, request: Request):
+    """A café asking for ode from the website."""
+    slow_down(request)
+    store().add_lead({k: v.strip() for k, v in body.model_dump(exclude={"website"}).items()})
+    return {"ok": True}
 
 
 @app.get("/api/cafes/{cafe_id}")

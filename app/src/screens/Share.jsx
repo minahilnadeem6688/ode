@@ -37,7 +37,7 @@ export default function Share() {
 
   if (!c) return null;
   return (
-    <main className="screen share" style={{ '--bg': 'linear-gradient(160deg, #F3ECE1, #E9DFD0)' }}>
+    <main className="screen screen--narrow share" style={{ '--bg': 'linear-gradient(160deg, #F3ECE1, #E9DFD0)' }}>
       <Ambient variant="quiet" />
       <CafeBar left={<button type="button" className="iconbtn" aria-label="Back" onClick={() => navigate(-1)}><Icon name="back" /></button>} />
       <div className="share__tabs" role="radiogroup" aria-label="Format">

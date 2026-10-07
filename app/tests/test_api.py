@@ -49,7 +49,7 @@ def api():
     if os.environ.get("TEST_DATABASE_URL"):
         s = store.Postgres(os.environ["TEST_DATABASE_URL"])
         with s.conn() as c:
-            c.execute("truncate orders, creations, stock_out")
+            c.execute("truncate orders, creations, stock_out, leads")
     else:
         s = store.Memory()
     store.set_store(s)
@@ -227,3 +227,16 @@ def test_visitors_are_slowed_down(api):
     for _ in range(8):
         craft(api, text="calm")
     assert api.post("/api/cafes/demo/craft", json={"text": "calm"}).status_code == 429
+
+
+def test_cafe_enquiry_is_saved(api):
+    body = {"cafe_name": "Rain Café", "name": "Sara", "city": "Islamabad", "contact": "sara@example.com", "message": "Interested in a pilot"}
+    assert api.post("/api/leads", json=body).json() == {"ok": True}
+    s = store.store()
+    if s.kind == "memory":
+        assert s.leads[-1]["cafe_name"] == "Rain Café"
+    else:
+        with s.conn() as c:
+            assert c.execute("select count(*) n from leads").fetchone()["n"] == 1
+    assert api.post("/api/leads", json={**body, "website": "spam.example"}).status_code == 422
+    assert api.post("/api/leads", json={**body, "contact": "x"}).status_code == 422

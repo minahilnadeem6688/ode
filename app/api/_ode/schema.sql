@@ -31,3 +31,14 @@ create table if not exists stock_out (
   at       timestamptz not null default now(),
   primary key (cafe_id, item_id)
 );
+
+-- Cafés asking for ode from the website
+create table if not exists leads (
+  id          bigserial primary key,
+  cafe_name   text not null,
+  name        text not null,
+  city        text not null,
+  contact     text not null,
+  message     text,
+  created_at  timestamptz not null default now()
+);

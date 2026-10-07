@@ -83,7 +83,7 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
   // soft contact shadow under the saucer
   const shadowTex = (() => {
     const c = document.createElement('canvas'); c.width = c.height = 128;
-    const g = c.getContext('2d'); const grd = g.createRadialGradient(64, 64, 10, 64, 64, 64);
+    const g = c.getContext('2d'); const grd = g.createRadialGradient(64, 64, 10, 64, 64, 54);
     grd.addColorStop(0, 'rgba(58,53,48,.35)'); grd.addColorStop(1, 'rgba(58,53,48,0)');
     g.fillStyle = grd; g.fillRect(0, 0, 128, 128);
     return new THREE.CanvasTexture(c);

@@ -24,3 +24,7 @@
 .order__stars button.on { transform: scale(1.08); }
 .order__thanks { text-align: center; margin: 26px 0 0; }
 .order__foot { margin-top: auto; padding-top: 24px; }
+
+@media (min-width: 760px) {
+  .order__code { font-size: 140px; }
+}

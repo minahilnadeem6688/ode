@@ -7,3 +7,17 @@
 .welcome__cta { margin-top: auto; padding-top: 26px; }
 .welcome__foot { display: flex; justify-content: center; gap: 10px; margin: 16px 0 0; font-size: 14px; color: var(--moss); }
 .welcome__foot a { color: var(--roast); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--honey); }
+
+@media (min-width: 760px) {
+  .welcome__hero { margin-top: 40px; }
+  .welcome__hero h1 { font-size: 84px; }
+  .welcome__hero p { font-size: 18px; }
+}
+@media (min-width: 1100px) {
+  .screen.welcome { display: grid; grid-template-columns: 1.1fr .9fr; grid-template-rows: auto 1fr auto; column-gap: 80px; }
+  .welcome > header { grid-column: 1 / -1; }
+  .welcome__hero { grid-column: 1; grid-row: 2 / span 2; align-self: center; margin: 0 0 40px; }
+  .welcome__hero h1 { font-size: 112px; }
+  .welcome__ask { grid-column: 2; grid-row: 2; align-self: end; padding: 26px; border-radius: var(--r-lg); background: rgba(255,255,255,.55); box-shadow: var(--shadow-card); backdrop-filter: blur(8px); }
+  .welcome__cta { grid-column: 2; grid-row: 3; padding-bottom: 20px; }
+}

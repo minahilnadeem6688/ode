@@ -28,7 +28,7 @@ class Memory:
 
     def __init__(self):
         self.lock = threading.Lock()
-        self.creations, self.orders, self.out = {}, [], {}
+        self.creations, self.orders, self.out, self.leads = {}, [], {}, []
 
     def stock_out(self, cafe):
         return sorted(self.out.get(cafe, set()))
@@ -73,6 +73,9 @@ class Memory:
 
     def board(self, cafe):
         return [dict(o) for o in self._active(cafe)]
+
+    def add_lead(self, lead):
+        self.leads.append({**lead, "at": time.time()})
 
     def advance(self, cafe, oid, status):
         with self.lock:
@@ -163,6 +166,13 @@ class Postgres:
     def board(self, cafe):
         with self.conn() as c:
             return [self._order(r) for r in c.execute(f"select * from orders where {self.ACTIVE} order by placed_at", (cafe,))]
+
+    def add_lead(self, lead):
+        with self.conn() as c:
+            c.execute(
+                "insert into leads (cafe_name, name, city, contact, message) values (%(cafe_name)s, %(name)s, %(city)s, %(contact)s, %(message)s)",
+                lead,
+            )
 
     def advance(self, cafe, oid, status):
         prev = {v: k for k, v in NEXT.items()}.get(status)

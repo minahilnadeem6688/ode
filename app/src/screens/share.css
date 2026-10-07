@@ -8,3 +8,8 @@
 .share__preview canvas { width: 100%; height: 100%; display: block; }
 .share__cta { margin-top: auto; padding-top: 20px; }
 .share__note { text-align: center; font-size: 14px; margin: 12px 0 0; }
+
+@media (min-width: 760px) {
+  .share__preview.story { width: 340px; }
+  .share__preview.post { width: 460px; }
+}

@@ -30,3 +30,8 @@
 @keyframes pulse { 50% { transform: scale(.6); } }
 .crafting__bar { margin: auto auto 0; width: min(100%, 280px); height: 3px; border-radius: 3px; background: rgba(160,135,110,.2); overflow: hidden; }
 .crafting__bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--honey), var(--cherry)); transition: width .8s var(--ease); }
+
+@media (min-width: 760px) {
+  .crafting__stage3d { height: 440px; margin: 0; }
+  .crafting__title { font-size: 52px; }
+}

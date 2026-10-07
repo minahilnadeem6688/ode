@@ -1,4 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { MENU } from '../lib/paths';
 import { CafeBar, Mark, Portrait } from '../components/Brand';
 import { Ambient } from '../components/Three';
 import Icon from '../components/Icon';
@@ -17,7 +18,7 @@ export default function Mine() {
   return (
     <main className="screen mine" style={{ '--bg': 'linear-gradient(160deg, #FAF6F0, #F2EBE0)' }}>
       <Ambient variant="quiet" />
-      <CafeBar left={<button type="button" className="iconbtn" aria-label="Back" onClick={() => navigate('/')}><Icon name="back" /></button>} />
+      <CafeBar left={<button type="button" className="iconbtn" aria-label="Back" onClick={() => navigate(MENU)}><Icon name="back" /></button>} />
       <h1 className="display mine__title rise">my <em className="cherry">odes</em></h1>
       <p className="muted rise" style={{ '--d': '.06s', margin: '8px 0 0' }}>{all.length ? `${all.length} drink${all.length === 1 ? '' : 's'} written for you.` : 'Nothing saved yet.'}</p>
 
@@ -35,7 +36,7 @@ export default function Mine() {
         <div className="mine__empty rise">
           <Mark size={70} />
           <p className="poem">every ode you love<br />will wait for you here.</p>
-          <Link to="/" className="btn btn--honey">Write your first</Link>
+          <Link to={MENU} className="btn btn--honey">Write your first</Link>
         </div>
       )}
     </main>

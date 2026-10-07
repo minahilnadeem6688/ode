@@ -12,7 +12,10 @@ A mood menu for cafés. A customer scans a QR code, says how they feel, and gets
 | `app/api/` | The API (FastAPI): writes each ode, takes orders, runs the board and the pantry |
 | `design/` | Brand boards and the brand's generators: the quotation-drop mark, flavour portraits, painted ingredients |
 
-### Customer
+### Website
+- **`/`**: what ode is, how it works, a gallery of odes, features for cafés, the free pilot, FAQ and a form that saves café enquiries to the database (`leads` table)
+
+### Customer (`/c/demo`)
 - **Tell us how you feel**: free text or an example, then optional mood, temperature, sweetness and flavours
 - **Anything we must avoid**: dietary needs and allergies, enforced as hard rules and shown to the barista in red
 - **Your ode**: name, two lines, a generated portrait, mood match, painted ingredients, size and price
@@ -42,7 +45,7 @@ npm install
 npm run dev
 ```
 
-Open `/` on a phone-sized window and `/barista` in another tab. Without the API, everything runs on the device (drinks from the rules engine, orders shared between tabs).
+Open `/` for the website, `/c/demo` for the customer menu (what a table QR code opens) and `/barista` in another tab. Without the API, everything runs on the device (drinks from the rules engine, orders shared between tabs).
 
 With the API:
 

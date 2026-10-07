@@ -32,7 +32,7 @@ export default function Crafting() {
   }, [navigate]);
 
   return (
-    <main className="screen crafting" style={{ '--bg': 'linear-gradient(160deg, #EFECE2, #E5DFD2)' }}>
+    <main className="screen screen--narrow crafting" style={{ '--bg': 'linear-gradient(160deg, #EFECE2, #E5DFD2)' }}>
       <CafeBar />
       <div className="crafting__stage3d" aria-hidden="true">
         <Cup mode="crafting" stage={stage} colors={['#D9B27A', '#E3AAB2', '#C99A6A', '#EED3C0']} className="crafting__canvas" />
