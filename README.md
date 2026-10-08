@@ -19,6 +19,11 @@ A mood menu for cafés. A customer scans a QR code, says how they feel, and gets
 - **`/wall`**: a Pinterest-style wall of odes, filterable by mood, each opening into its ingredients and price
 - **`/pricing`**: the free pilot and the monthly plan
 - **`/get-ode`**: the pilot request form (saved to the `leads` table)
+- **`/login`**: two separate doors: customers (sign in or create an account) and the café team (café ID and key)
+- **`/account`**: a customer's saved odes, order history and taste
+- **`/dashboard`**: the café team's overview (orders, sales, ratings, moods, busiest ingredients), pantry, table cards and pilot requests
+
+The Wall's photos are rendered by a small 3D studio (`src/three/still.js`) at `/kit/stills` and saved to `public/wall/`.
 
 ### Customer (`/c/demo`)
 - **Tell us how you feel**: free text or an example, then optional mood, temperature, sweetness and flavours
@@ -77,7 +82,9 @@ Environment variables, set in Vercel only:
 | --- | --- |
 | `OPENAI_API_KEY` | Turns the model on. Without it every drink comes from the rules engine |
 | `DATABASE_URL` | Postgres connection string (Neon, pooled). Tables are created on first run |
-| `ODE_STAFF_KEY` | The café key the barista types once on the board's screen |
+| `ODE_STAFF_KEY` | The café key: the café team signs in with it at `/login` (I run a café) |
+| `ODE_SECRET` | Recommended: a long random value that signs customer and team sessions |
+| `ODE_ADMIN_KEY` | Optional: a separate owner key that also sees pilot requests. Without it, the café key does |
 | `ODE_MODEL` | Optional, defaults to `gpt-4o-mini` |
 | `ODE_DAILY_MODEL_LIMIT` | Optional, odes per café per day written by the model (default 400); after that, the rules engine |
 

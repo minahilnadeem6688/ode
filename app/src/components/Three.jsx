@@ -27,7 +27,7 @@ export function Ambient({ variant = 'welcome' }) {
 export const drinkColors = (c) => c.recipe.ingredients.filter((i) => i.id !== 'ice').map((i) => INGREDIENT_COLORS[i.id] || i.color);
 
 // The 3D cup. In crafting mode `stage` drives the drops and the colour; without WebGL the portrait stands in.
-export function Cup({ creation, colors, mode = 'hero', stage = 0, hot, className }) {
+export function Cup({ creation, colors, mode = 'hero', stage = 0, hot, intro = false, className }) {
   const ref = useRef(null);
   const api = useRef(null);
   const [fallback] = useState(() => !canWebGL());
@@ -40,7 +40,7 @@ export function Cup({ creation, colors, mode = 'hero', stage = 0, hot, className
     let cancelled = false;
     import('../three/cup').then(({ mountCup }) => {
       if (cancelled || !ref.current) return;
-      api.current = mountCup(ref.current, { colors: cols, mode, hot: isHot });
+      api.current = mountCup(ref.current, { colors: cols, mode, hot: isHot, intro });
       api.current.setStage(stage);
     });
     return () => { cancelled = true; api.current?.dispose(); api.current = null; };

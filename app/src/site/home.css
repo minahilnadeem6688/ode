@@ -98,3 +98,22 @@
 .shelf__jar:hover { transform: translateY(-6px) rotate(-2deg); box-shadow: var(--shadow-pop); }
 .shelf__jar small { font-size: 12.5px; color: var(--moss-deep); text-align: center; }
 .is-in .shelf__jar { animation: pop .6s var(--spring) both; animation-delay: calc(var(--i) * .035s); }
+
+/* A strip of Wall photos */
+.wallstrip__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 20px; }
+.wallstrip { display: flex; gap: 14px; overflow-x: auto; margin: 40px calc(var(--pad) * -1) 0; padding: 0 var(--pad) 10px; scroll-snap-type: x mandatory; scrollbar-width: none; align-items: flex-start; }
+.wallstrip::-webkit-scrollbar { display: none; }
+.wallstrip__pin { flex: none; width: 230px; scroll-snap-align: start; text-decoration: none; display: grid; gap: 8px; }
+.wallstrip__pin:nth-child(even) { margin-top: 40px; }
+.wallstrip__pin img { width: 100%; border-radius: 18px; object-fit: cover; box-shadow: var(--shadow-card); transition: transform .5s var(--ease), box-shadow .5s; }
+.wallstrip__pin:hover img { transform: translateY(-4px); box-shadow: var(--shadow-pop); }
+.wallstrip__pin span { font: 600 14px var(--sans); color: var(--roast); padding-left: 4px; }
+
+/* Trust */
+.trust { display: grid; gap: 1px; margin-top: 40px; border-radius: var(--r-lg); overflow: hidden; background: rgba(160, 135, 110, .18); }
+.trust__item { padding: 28px; background: var(--cream); }
+.trust__item svg { color: var(--honey-deep); }
+.trust__item h3 { margin: 14px 0 8px; font: 400 21px/1.25 var(--serif); font-variation-settings: 'SOFT' 100; }
+.trust__item p { margin: 0; color: var(--moss-deep); line-height: 1.6; font-size: 15.5px; }
+@media (min-width: 760px) { .trust { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1100px) { .trust { grid-template-columns: repeat(4, 1fr); } }

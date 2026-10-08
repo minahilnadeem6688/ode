@@ -4,7 +4,8 @@ import { Mark, Painted } from '../components/Brand';
 import { Cup, drinkColors } from '../components/Three';
 import { readMood, buildRecipe, writeOde, priceOf } from '../lib/craft';
 import { MENU } from '../lib/paths';
-import { HERO, WALL, byId } from './odes';
+import Icon from '../components/Icon';
+import { HERO, WALL } from './odes';
 import { STILLS } from './stills';
 import './home.css';
 
@@ -40,7 +41,7 @@ function TryIt() {
 
       <div className="try__stage">
         <span className="try__halo" aria-hidden="true" />
-        <Cup creation={drink} className="try__cup" />
+        <Cup creation={drink} intro className="try__cup" />
         <figure key={n} className="try__card">
           <small>{moodWord}</small>
           <b>{drink.name}</b>
@@ -158,11 +159,38 @@ export default function Home() {
       </section>
 
       <section className="section">
-        <p className="eyebrow" data-reveal>made from your shelf</p>
-        <h2 className="display h2" data-reveal style={{ '--d': '.08s' }}>your ingredients, <em>endless drinks.</em></h2>
-        <div className="shelf" data-reveal style={{ '--d': '.12s' }}>
-          {['espresso', 'black_tea', 'matcha', 'hibiscus', 'milk', 'oat_milk', 'cocoa', 'caramel', 'honey', 'rose', 'lavender', 'cardamom', 'cinnamon', 'ginger', 'lychee', 'lemon', 'orange', 'strawberry', 'mango', 'mint'].map((id, i) => (
-            <span key={id} className="shelf__jar" style={{ '--i': i }}><Painted item={byId[id]} size={44} /><small>{byId[id].name}</small></span>
+        <div className="wallstrip__head">
+          <div>
+            <p className="eyebrow" data-reveal>from the wall</p>
+            <h2 className="display h2" data-reveal style={{ '--d': '.08s' }}>made to be <em className="cherry">saved.</em></h2>
+          </div>
+          <Link to="/wall" className="btn btn--ghost" data-reveal>See the Wall</Link>
+        </div>
+        <div className="wallstrip" data-reveal style={{ '--d': '.12s' }}>
+          {STILLS.slice(10, 20).map((s, i) => (
+            <Link key={s.id} to="/wall" className="wallstrip__pin" style={{ '--i': i }}>
+              <img src={s.src} alt={WALL[10 + i].name} loading="lazy" style={{ aspectRatio: `${s.width} / ${s.height}` }} />
+              <span>{WALL[10 + i].name}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="section">
+        <p className="eyebrow" data-reveal>built to be trusted</p>
+        <h2 className="display h2" data-reveal style={{ '--d': '.08s' }}>quietly <em>careful.</em></h2>
+        <div className="trust">
+          {[
+            ['Allergies are never guessed', 'What a customer must avoid is removed before a drink is written, and shown to your barista in red.'],
+            ['No account needed to order', 'Customers scan and order. Accounts are optional, and passwords are stored only as secure hashes.'],
+            ['Payments stay yours', 'Customers pay at your counter, the way they do today. ode never touches your money.'],
+            ['Your café’s data is yours', 'Orders, ratings and your pantry belong to your café. Your team signs in with its own key.'],
+          ].map(([t, d], i) => (
+            <article key={t} className="trust__item" data-reveal style={{ '--d': 0.06 * i + 's' }}>
+              <Icon name="check" size={18} width={2.2} />
+              <h3>{t}</h3>
+              <p>{d}</p>
+            </article>
           ))}
         </div>
       </section>

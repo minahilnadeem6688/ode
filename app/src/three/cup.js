@@ -4,6 +4,7 @@
  * colour deepens; hero mode lets you turn the cup, and hot drinks steam.
  */
 import { createStage, dropGeometry, glossy, reducedMotion } from './stage';
+import { PROP, rng } from './props';
 
 export const NOISE = `
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -55,11 +56,13 @@ const STEAM_FRAG = `
   }
 `;
 
-export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero', hot = false } = {}) {
+export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero', hot = false, intro = false } = {}) {
   const st = createStage(canvas, { fov: 30 });
   const { THREE, scene, camera } = st;
-  camera.position.set(0, mode === 'hero' ? 3.5 : 3.2, mode === 'hero' ? 4.9 : 4.4);
-  camera.lookAt(0, 0.38, 0);
+  const still = reducedMotion();
+  const show = intro && !still; // the website's opening moment
+  camera.position.set(0, mode === 'hero' ? (show ? 4.3 : 3.5) : 3.2, mode === 'hero' ? (show ? 7.2 : 4.9) : 4.4);
+  camera.lookAt(0, show ? 0.55 : 0.38, 0);
 
   const cup = new THREE.Group();
   scene.add(cup);
@@ -97,7 +100,7 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
   const pal = [...colors, ...colors, ...colors].slice(0, 4);
   const uniforms = {
     uC0: { value: toLinear(pal[0]) }, uC1: { value: toLinear(pal[1]) }, uC2: { value: toLinear(pal[2]) }, uC3: { value: toLinear(pal[3]) },
-    uTime: { value: 0 }, uIntensity: { value: mode === 'crafting' ? 0 : 1 }, uDropT: { value: -10 }, uSeed: { value: Math.random() * 10 },
+    uTime: { value: 0 }, uIntensity: { value: mode === 'crafting' || show ? 0 : 1 }, uDropT: { value: -10 }, uSeed: { value: Math.random() * 10 },
   };
   const liquid = new THREE.Mesh(new THREE.CircleGeometry(0.83, 96), new THREE.ShaderMaterial({
     uniforms, vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }', fragmentShader: LIQUID_FRAG,
@@ -107,6 +110,7 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
   cup.add(liquid);
 
   const steam = [];
+  let isHot = hot;
   if (mode === 'hero') {
     for (let i = 0; i < 2; i++) {
       const m = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 1.6), new THREE.ShaderMaterial({
@@ -114,15 +118,15 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
         vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }', fragmentShader: STEAM_FRAG,
       }));
       m.position.set(i ? 0.18 : -0.15, 1.65, i ? -0.1 : 0.1);
-      m.visible = hot;
+      m.visible = hot && !show;
       scene.add(m);
       steam.push(m);
     }
   }
 
-  // crafting: the two logo drops fall in turn
+  // the two logo drops fall in turn (crafting, and the website's opening)
   const drops = [];
-  if (mode === 'crafting') {
+  if (mode === 'crafting' || show) {
     const g = dropGeometry(6);
     ['#D4A55A', '#C4858C'].forEach((c, i) => {
       const m = new THREE.Mesh(g, glossy(c));
@@ -132,7 +136,32 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
       drops.push({ m, i });
     });
   }
-  let stage = 0, target = mode === 'crafting' ? 0 : 1;
+  let stage = 0, target = mode === 'crafting' || show ? 0 : 1;
+
+  // the opening: ingredients that drift around the cup once the drink has poured
+  const orbit = new THREE.Group();
+  const floaters = [];
+  if (show) {
+    const r = rng('ode-hero');
+    const kinds = ['espresso', 'rose', 'mint', 'cardamom', 'honey', 'rose', 'espresso', 'lavender'];
+    kinds.forEach((id, i) => {
+      const p = PROP[id](r);
+      const a = (i / kinds.length) * Math.PI * 2 + r() * 0.3;
+      const rad = 1.85 + r() * 0.5;
+      const holder = new THREE.Group();
+      holder.add(p);
+      holder.position.set(Math.cos(a) * rad, 0.35 + r() * 1.3, Math.sin(a) * rad);
+      holder.rotation.set(r() * 1.2 - 0.6, r() * 6.28, r() * 1.2 - 0.6);
+      holder.scale.setScalar(0);
+      orbit.add(holder);
+      floaters.push({ holder, size: 0.55 + r() * 0.25, delay: i * 0.12, spin: (r() - 0.5) * 0.6, bob: r() * 6 });
+    });
+    scene.add(orbit);
+  }
+  let born = null, landed = 0;
+  const tilt = { x: 0, y: 0, tx: 0, ty: 0 };
+  const lean = (e) => { tilt.tx = (e.clientY / window.innerHeight - 0.5) * 0.25; tilt.ty = (e.clientX / window.innerWidth - 0.5) * 0.4; st.refresh(); };
+  if (show) window.addEventListener('pointermove', lean, { passive: true });
   // colours glide to new ones instead of jumping (the website's live demo changes them)
   const goal = [uniforms.uC0, uniforms.uC1, uniforms.uC2, uniforms.uC3].map((u) => u.value.clone());
 
@@ -148,7 +177,8 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
     canvas.addEventListener('pointercancel', up);
   }
 
-  const still = reducedMotion();
+  const ease = (k) => 1 - Math.pow(1 - Math.min(1, Math.max(0, k)), 3);
+  const springy = (k) => { k = Math.min(1, Math.max(0, k)); return 1 + Math.pow(2, -9 * k) * Math.sin((k * 9 - 0.75) * ((2 * Math.PI) / 3)) * -1 * (k < 1 ? 1 : 0); };
   st.setFrame((t) => {
     uniforms.uTime.value = t;
     [uniforms.uC0, uniforms.uC1, uniforms.uC2, uniforms.uC3].forEach((u, i) => u.value.lerp(goal[i], still ? 1 : 0.04));
@@ -156,7 +186,39 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
     if (still) uniforms.uIntensity.value = target;
     if (mode === 'hero') {
       if (!dragging) { vel *= 0.94; spin += vel + 0.0018; }
-      cup.rotation.y = -0.7 + spin;
+      const scroll = show ? window.scrollY * 0.0022 : 0;
+      cup.rotation.y = -0.7 + spin + scroll;
+      if (show) {
+        born ??= t;
+        const e = t - born;
+        // the cup rises in, then the honey drop and the cherry drop fall into it
+        const k = springy(e / 1.1);
+        cup.scale.setScalar(0.82 + 0.18 * k);
+        saucer.scale.setScalar(0.82 + 0.18 * k);
+        cup.position.y = (1 - ease(e / 0.9)) * -0.35;
+        drops.forEach(({ m, i }) => {
+          const s0 = 0.55 + i * 0.6, f = (e - s0) / 0.6;
+          m.visible = f > 0 && f < 1.15;
+          m.position.set(i ? 0.14 : -0.14, 2.5 - Math.pow(Math.min(1, f), 2) * 1.7, 0.05);
+          m.rotation.set(0, -0.35, Math.PI);
+          m.scale.setScalar(0.42 * (f > 0.9 ? Math.max(0.02, 1 - (f - 0.9) * 4) : 1));
+          if (f >= 1 && landed <= i) { landed = i + 1; uniforms.uDropT.value = t; target = landed / 2; }
+        });
+        // then the ingredients drift in and the steam rises
+        tilt.x += (tilt.tx - tilt.x) * 0.05;
+        tilt.y += (tilt.ty - tilt.y) * 0.05;
+        cup.rotation.x = tilt.x * 0.5;
+        cup.rotation.z = -tilt.y * 0.25;
+        orbit.rotation.y = t * 0.06 + scroll * 0.6 + tilt.y * 0.4;
+        orbit.rotation.x = tilt.x * 0.3;
+        floaters.forEach((f, i) => {
+          f.holder.scale.setScalar(f.size * springy((e - 1.9 - f.delay) / 1.2));
+          f.holder.rotation.y += f.spin * 0.01;
+          f.holder.position.y += Math.sin(t * 0.8 + f.bob) * 0.0012;
+          f.holder.rotation.z = Math.sin(t * 0.5 + i) * 0.25;
+        });
+        steam.forEach((m) => { m.visible = isHot && e > 2.2; });
+      }
     } else {
       cup.rotation.y = -0.7 + Math.sin(t * 0.25) * 0.15;
       const cycle = 2.4;
@@ -172,19 +234,20 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
       }
     }
     steam.forEach((m) => m.lookAt(camera.position));
-    cup.position.y = mode === 'crafting' ? Math.sin(t * 0.8) * 0.01 : 0;
+    if (mode === 'crafting') cup.position.y = Math.sin(t * 0.8) * 0.01;
   });
 
   return {
-    setStage(n) { stage = n; target = Math.min(1, n / 3); },
+    setStage(n) { if (mode !== 'crafting') return; stage = n; target = Math.min(1, n / 3); },
     setColors(list) {
       const next = [...list, ...list, ...list].slice(0, 4);
       next.forEach((c, i) => goal[i].set(c));
       uniforms.uDropT.value = uniforms.uTime.value; // a ripple as the new drink pours in
       st.refresh();
     },
-    setHot(h) { steam.forEach((m) => { m.visible = h; }); st.refresh(); },
+    setHot(h) { isHot = h; if (!show) steam.forEach((m) => { m.visible = h; }); st.refresh(); },
     dispose() {
+      window.removeEventListener('pointermove', lean);
       canvas.removeEventListener('pointerdown', down);
       canvas.removeEventListener('pointermove', move);
       canvas.removeEventListener('pointerup', up);
