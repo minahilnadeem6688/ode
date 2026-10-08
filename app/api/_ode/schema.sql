@@ -42,3 +42,22 @@ create table if not exists leads (
   message     text,
   created_at  timestamptz not null default now()
 );
+
+-- Customer accounts
+create table if not exists users (
+  id          text primary key,
+  email       text not null unique,
+  name        text not null,
+  pw_hash     text not null,
+  created_at  timestamptz not null default now()
+);
+
+create table if not exists saves (
+  user_id      text not null references users (id) on delete cascade,
+  creation_id  text not null references creations (id) on delete cascade,
+  saved_at     timestamptz not null default now(),
+  primary key (user_id, creation_id)
+);
+
+alter table orders add column if not exists user_id text references users (id) on delete set null;
+create index if not exists orders_user on orders (user_id, placed_at desc);

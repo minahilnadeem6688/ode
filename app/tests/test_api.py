@@ -49,12 +49,13 @@ def api():
     if os.environ.get("TEST_DATABASE_URL"):
         s = store.Postgres(os.environ["TEST_DATABASE_URL"])
         with s.conn() as c:
-            c.execute("truncate orders, creations, stock_out, leads")
+            c.execute("truncate orders, saves, users, creations, stock_out, leads cascade")
     else:
         s = store.Memory()
     store.set_store(s)
     llm.set_model(None)
     index._visits.clear()
+    index._tries.clear()
     os.environ["ODE_STAFF_KEY"] = "test-key"
     yield TestClient(index.app, headers={"x-ode-staff": "test-key"})
     llm.set_model(None)
@@ -240,3 +241,98 @@ def test_cafe_enquiry_is_saved(api):
             assert c.execute("select count(*) n from leads").fetchone()["n"] == 1
     assert api.post("/api/leads", json={**body, "website": "spam.example"}).status_code == 422
     assert api.post("/api/leads", json={**body, "contact": "x"}).status_code == 422
+
+
+
+def bearer(t):
+    return {"authorization": "Bearer " + t}
+
+
+def signup(api, email="sara@example.com", password="rainy-window-42"):
+    r = api.post("/api/auth/signup", json={"name": "Sara", "email": email, "password": password})
+    assert r.status_code == 200, r.text
+    return r.json()["token"]
+
+
+def test_customer_signup_login_and_wrong_password(api):
+    signup(api, "Sara@Example.com ")
+    assert api.post("/api/auth/signup", json={"name": "S", "email": "sara@example.com", "password": "another-one-1"}).status_code == 409
+    ok = api.post("/api/auth/login", json={"email": "SARA@example.com", "password": "rainy-window-42"})
+    assert ok.status_code == 200 and ok.json()["user"]["email"] == "sara@example.com"
+    assert "pw_hash" not in ok.json()["user"]
+    assert api.post("/api/auth/login", json={"email": "sara@example.com", "password": "nope-nope-1"}).status_code == 401
+    assert api.post("/api/auth/signup", json={"name": "x", "email": "not-an-email", "password": "longenough1"}).status_code == 422
+    assert api.post("/api/auth/signup", json={"name": "x", "email": "a@b.co", "password": "short"}).status_code == 422
+
+
+def test_passwords_are_never_stored_as_text(api):
+    signup(api)
+    u = store.store().user_by_email("sara@example.com")
+    assert "rainy-window-42" not in u["pw_hash"] and u["pw_hash"].startswith("scrypt$")
+
+
+def test_saved_odes_and_order_history_follow_the_account(api):
+    t = signup(api)
+    c = craft(api, text="rainy evening")
+    assert api.put(f"/api/me/saved/{c['id']}", headers=bearer(t)).status_code == 200
+    o = api.post("/api/cafes/demo/orders", json={"creationId": c["id"]}, headers=bearer(t)).json()
+    assert "userId" not in o
+    me = api.get("/api/me", headers=bearer(t)).json()
+    assert [x["id"] for x in me["saved"]] == [c["id"]]
+    assert me["orders"][0]["code"] == o["code"] and me["orders"][0]["creation"]["name"] == c["name"]
+    assert "steps" not in me["saved"][0]["recipe"]
+    api.delete(f"/api/me/saved/{c['id']}", headers=bearer(t))
+    assert api.get("/api/me", headers=bearer(t)).json()["saved"] == []
+
+
+def test_ordering_without_an_account_still_works(api):
+    c = craft(api, text="calm")
+    assert api.post("/api/cafes/demo/orders", json={"creationId": c["id"]}).status_code == 200
+
+
+def test_me_needs_a_valid_session(api):
+    assert api.get("/api/me").status_code == 401
+    assert api.get("/api/me", headers=bearer("forged.token")).status_code == 401
+    t = signup(api)
+    body, sig = t.split(".")
+    assert api.get("/api/me", headers=bearer(body + "." + sig[::-1])).status_code == 401
+
+
+def test_team_login_is_separate_from_customers(api):
+    api.headers.pop("x-ode-staff")
+    assert api.post("/api/auth/team", json={"cafe": "demo", "key": "wrong"}).status_code == 401
+    team = api.post("/api/auth/team", json={"cafe": "demo", "key": "test-key"}).json()
+    assert team["cafe"]["id"] == "demo"
+    assert api.get("/api/cafes/demo/board", headers=bearer(team["token"])).status_code == 200
+    assert api.get("/api/cafes/demo/stats", headers=bearer(team["token"])).status_code == 200
+    # a customer session never opens the café tools, and a team session is not a customer
+    t = signup(api)
+    assert api.get("/api/cafes/demo/board", headers=bearer(t)).status_code == 401
+    assert api.get("/api/me", headers=bearer(team["token"])).status_code == 401
+
+
+def test_pilot_requests_are_for_the_owner_only(api):
+    api.headers.pop("x-ode-staff")
+    api.post("/api/leads", json={"cafe_name": "Rain Café", "name": "Sara", "city": "Lahore", "contact": "0300 0000000"})
+    assert api.get("/api/leads").status_code == 401
+    assert api.get("/api/leads", headers={"x-ode-staff": "test-key"}).status_code == 401
+    team = api.post("/api/auth/team", json={"cafe": "demo", "key": "test-key"}).json()
+    assert team["admin"] is True
+    assert api.get("/api/leads", headers=bearer(team["token"])).json()["leads"][0]["cafe_name"] == "Rain Café"
+    os.environ["ODE_ADMIN_KEY"] = "owner-key"
+    try:
+        staff_only = api.post("/api/auth/team", json={"cafe": "demo", "key": "test-key"}).json()
+        assert staff_only["admin"] is False
+        assert api.get("/api/leads", headers=bearer(staff_only["token"])).status_code == 401
+    finally:
+        os.environ.pop("ODE_ADMIN_KEY")
+
+
+def test_dashboard_stats(api):
+    c = craft(api, text="rainy evening", moods=["cozy"])
+    o = api.post("/api/cafes/demo/orders", json={"creationId": c["id"]}).json()
+    api.post(f"/api/creations/{c['id']}/rating", json={"rating": 4, "chips": ["perfect"]})
+    st = api.get("/api/cafes/demo/stats").json()
+    assert st["today"]["orders"] == 1 and st["today"]["revenue"] == o["price"]
+    assert st["moods"][0][0] == "cozy" and st["rating"]["average"] == 4
+    assert st["recent"][0]["chips"] == ["perfect"]

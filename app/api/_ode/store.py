@@ -29,6 +29,7 @@ class Memory:
     def __init__(self):
         self.lock = threading.Lock()
         self.creations, self.orders, self.out, self.leads = {}, [], {}, []
+        self.users, self.saves = {}, {}
 
     def stock_out(self, cafe):
         return sorted(self.out.get(cafe, set()))
@@ -58,11 +59,12 @@ class Memory:
         cutoff = time.time() - ACTIVE_HOURS * 3600
         return [o for o in self.orders if o["cafe"] == cafe and o["status"] != "collected" and o["placedAt"] / 1000 > cutoff]
 
-    def place(self, cafe, creation_id, size, price):
+    def place(self, cafe, creation_id, size, price, user_id=None):
         with self.lock:
             o = {
                 "id": new_id(12), "cafe": cafe, "code": _pick_code({o["code"] for o in self._active(cafe)}),
                 "creationId": creation_id, "size": size, "price": price, "status": "new", "placedAt": int(time.time() * 1000),
+                "userId": user_id,
             }
             self.orders.insert(0, o)
             return dict(o)
@@ -75,7 +77,50 @@ class Memory:
         return [dict(o) for o in self._active(cafe)]
 
     def add_lead(self, lead):
-        self.leads.append({**lead, "at": time.time()})
+        self.leads.append({**lead, "createdAt": int(time.time() * 1000)})
+
+    def list_leads(self):
+        return list(reversed(self.leads))
+
+    # accounts
+    def create_user(self, email, name, pw_hash):
+        with self.lock:
+            if any(u["email"] == email for u in self.users.values()):
+                return None
+            u = {"id": new_id(12), "email": email, "name": name, "pw_hash": pw_hash, "createdAt": int(time.time() * 1000)}
+            self.users[u["id"]] = u
+            return dict(u)
+
+    def user_by_email(self, email):
+        u = next((u for u in self.users.values() if u["email"] == email), None)
+        return dict(u) if u else None
+
+    def user_by_id(self, uid):
+        u = self.users.get(uid)
+        return dict(u) if u else None
+
+    def save_ode(self, uid, cid, on):
+        s = self.saves.setdefault(uid, {})
+        if on:
+            s.setdefault(cid, time.time())
+        else:
+            s.pop(cid, None)
+
+    def saved(self, uid):
+        items = sorted(self.saves.get(uid, {}).items(), key=lambda x: -x[1])
+        return [{**self.get_creation(cid), "savedAt": int(at * 1000)} for cid, at in items if cid in self.creations]
+
+    def orders_for(self, uid, limit=30):
+        return [dict(o) for o in self.orders if o.get("userId") == uid][:limit]
+
+    def stats(self, cafe):
+        now = time.time()
+        mine = [o for o in self.orders if o["cafe"] == cafe]
+        today = [o for o in mine if o["placedAt"] / 1000 > now - 86400]
+        week = [o for o in mine if o["placedAt"] / 1000 > now - 7 * 86400]
+        made = [self.creations[o["creationId"]] for o in week if o["creationId"] in self.creations]
+        rated = [c for c in self.creations.values() if c["cafe"] == cafe and c.get("rating")][::-1]
+        return _summarise(today, week, made, rated)
 
     def advance(self, cafe, oid, status):
         with self.lock:
@@ -144,15 +189,15 @@ class Postgres:
 
     ACTIVE = f"cafe_id = %s and status <> 'collected' and placed_at > now() - interval '{ACTIVE_HOURS} hours'"
 
-    def place(self, cafe, creation_id, size, price):
+    def place(self, cafe, creation_id, size, price, user_id=None):
         with self.conn() as c:
             for _ in range(5):
                 taken = {r["code"] for r in c.execute(f"select code from orders where {self.ACTIVE}", (cafe,))}
                 code = _pick_code(taken)
                 r = c.execute(
-                    f"insert into orders (id, cafe_id, code, creation_id, size, price) select %s, %s, %s, %s, %s, %s "
+                    f"insert into orders (id, cafe_id, code, creation_id, size, price, user_id) select %s, %s, %s, %s, %s, %s, %s "
                     f"where not exists (select 1 from orders where {self.ACTIVE} and code = %s) returning *",
-                    (new_id(12), cafe, code, creation_id, size, price, cafe, code),
+                    (new_id(12), cafe, code, creation_id, size, price, user_id, cafe, code),
                 ).fetchone()
                 if r:
                     return self._order(r)
@@ -174,6 +219,56 @@ class Postgres:
                 lead,
             )
 
+    def list_leads(self):
+        with self.conn() as c:
+            rows = c.execute("select * from leads order by created_at desc limit 200").fetchall()
+        return [{"cafe_name": r["cafe_name"], "name": r["name"], "city": r["city"], "contact": r["contact"], "message": r["message"],
+                 "createdAt": int(r["created_at"].timestamp() * 1000)} for r in rows]
+
+    @staticmethod
+    def _user(r):
+        return {"id": r["id"], "email": r["email"], "name": r["name"], "pw_hash": r["pw_hash"], "createdAt": int(r["created_at"].timestamp() * 1000)} if r else None
+
+    def create_user(self, email, name, pw_hash):
+        with self.conn() as c:
+            r = c.execute("insert into users (id, email, name, pw_hash) values (%s, %s, %s, %s) on conflict (email) do nothing returning *",
+                          (new_id(12), email, name, pw_hash)).fetchone()
+        return self._user(r)
+
+    def user_by_email(self, email):
+        with self.conn() as c:
+            return self._user(c.execute("select * from users where email = %s", (email,)).fetchone())
+
+    def user_by_id(self, uid):
+        with self.conn() as c:
+            return self._user(c.execute("select * from users where id = %s", (uid,)).fetchone())
+
+    def save_ode(self, uid, cid, on):
+        with self.conn() as c:
+            if on:
+                c.execute("insert into saves (user_id, creation_id) values (%s, %s) on conflict do nothing", (uid, cid))
+            else:
+                c.execute("delete from saves where user_id = %s and creation_id = %s", (uid, cid))
+
+    def saved(self, uid):
+        with self.conn() as c:
+            rows = c.execute("select c.data, s.saved_at from saves s join creations c on c.id = s.creation_id where s.user_id = %s order by s.saved_at desc", (uid,)).fetchall()
+        return [{**r["data"], "savedAt": int(r["saved_at"].timestamp() * 1000)} for r in rows]
+
+    def orders_for(self, uid, limit=30):
+        with self.conn() as c:
+            return [self._order(r) for r in c.execute("select * from orders where user_id = %s order by placed_at desc limit %s", (uid, limit))]
+
+    def stats(self, cafe):
+        with self.conn() as c:
+            today = [self._order(r) for r in c.execute("select * from orders where cafe_id = %s and placed_at > now() - interval '1 day'", (cafe,))]
+            week = [self._order(r) for r in c.execute("select * from orders where cafe_id = %s and placed_at > now() - interval '7 days'", (cafe,))]
+            made = [r["data"] for r in c.execute(
+                "select c.data from orders o join creations c on c.id = o.creation_id where o.cafe_id = %s and o.placed_at > now() - interval '7 days'", (cafe,))]
+            rated = [{**r["data"], "rating": r["rating"], "chips": r["chips"]} for r in c.execute(
+                "select data, rating, chips from creations where cafe_id = %s and rating is not null order by created_at desc limit 200", (cafe,))]
+        return _summarise(today, week, made, rated)
+
     def advance(self, cafe, oid, status):
         prev = {v: k for k, v in NEXT.items()}.get(status)
         if not prev:
@@ -184,6 +279,23 @@ class Postgres:
                 (status, oid, cafe, prev),
             ).fetchone()
             return self._order(r) if r else None
+
+
+def _summarise(today, week, made, rated):
+    from collections import Counter
+
+    moods = Counter(c["mood"]["primary"] for c in made)
+    ings = Counter(i["name"] for c in made for i in c["recipe"]["ingredients"] if i["id"] != "ice")
+    temps = Counter(c["recipe"]["temperature"] for c in made)
+    return {
+        "today": {"orders": len(today), "revenue": sum(o["price"] for o in today)},
+        "week": {"orders": len(week), "revenue": sum(o["price"] for o in week)},
+        "rating": {"average": round(sum(c["rating"] for c in rated) / len(rated), 2) if rated else None, "count": len(rated)},
+        "moods": moods.most_common(6),
+        "ingredients": ings.most_common(6),
+        "temperatures": dict(temps),
+        "recent": [{"name": c["name"], "rating": c["rating"], "chips": c.get("chips") or []} for c in rated[:6]],
+    }
 
 
 _store = None
