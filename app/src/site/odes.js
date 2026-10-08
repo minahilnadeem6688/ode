@@ -26,6 +26,14 @@ export const WALL = [
   ode('w14', 'Linen Morning', ['nothing to fix,', 'nowhere to be.'], 'calm', 'hot', ['matcha', 'vanilla', 'oat_milk'], 740),
   ode('w15', 'Heavy Lids', ['the kind of warmth that arrives', 'before you knew you needed it.'], 'tired', 'hot', ['espresso', 'hazelnut', 'cocoa', 'milk'], 640),
   ode('w16', 'Sepia', ['old songs,', 'warm hands.'], 'nostalgic', 'hot', ['black_tea', 'ginger', 'honey', 'milk'], 490),
+  ode('w17', 'Gold Rush', ['all the lights', 'turned on at once.'], 'energetic', 'cold', ['cold_brew', 'caramel', 'milk', 'ice'], 640),
+  ode('w18', 'Quiet Hour', ['the kind of quiet', 'that knows your name.'], 'calm', 'hot', ['black_tea', 'lavender', 'honey', 'milk'], 490),
+  ode('w19', 'Fizz & Gossip', ['bubbles, secrets,', 'one more round.'], 'playful', 'cold', ['soda', 'strawberry', 'lemon', 'mint'], 540),
+  ode('w20', 'Ember', ['the last warm coal', 'of a long night.'], 'cozy', 'hot', ['espresso', 'cocoa', 'cinnamon', 'oat_milk'], 740),
+  ode('w21', 'Second Glance', ['you were not looking,', 'and then you were.'], 'romantic', 'cold', ['lychee', 'rose', 'soda', 'ice'], 540),
+  ode('w22', 'Unclench', ['shoulders down,', 'the day can wait.'], 'stressed', 'hot', ['hibiscus', 'ginger', 'honey', 'lemon'], 490),
+  ode('w23', 'Soft Landing', ['wherever you were going,', 'you are here now.'], 'tired', 'hot', ['matcha', 'vanilla', 'milk'], 640),
+  ode('w24', 'Kite Tail', ['summer, still', 'pretending to be over.'], 'playful', 'cold', ['mango', 'orange', 'coconut_milk', 'ice'], 590),
 ];
 
 export const MOOD_TINT = {

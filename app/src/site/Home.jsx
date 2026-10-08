@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mark, Painted, Portrait } from '../components/Brand';
+import { Mark, Painted } from '../components/Brand';
 import { Cup, drinkColors } from '../components/Three';
 import { readMood, buildRecipe, writeOde, priceOf } from '../lib/craft';
 import { MENU } from '../lib/paths';
 import { HERO, WALL, byId } from './odes';
+import { STILLS } from './stills';
 import './home.css';
 
 const IDEAS = ['rainy afternoon, missing home', 'first day of summer', 'exam tomorrow', 'lazy sunday', 'late night drive', 'date night'];
@@ -121,7 +122,7 @@ export default function Home() {
         <div className="fan" data-reveal="zoom">
           {WALL.slice(0, 3).map((o, i) => (
             <figure key={o.id} className="fan__card" style={{ '--i': i - 1 }}>
-              <span className="fan__art"><Portrait creation={o} width={240} height={300} id={'fan' + i} /></span>
+              <span className="fan__art"><img src={STILLS[i].src} alt={o.name} loading="lazy" /></span>
               <figcaption><b>{o.name}</b><i>{o.lines[0]} {o.lines[1]}</i></figcaption>
             </figure>
           ))}
@@ -149,7 +150,7 @@ export default function Home() {
 
       <section className="band">
         <div className="band__float" aria-hidden="true">
-          {WALL.slice(6, 10).map((o, i) => <span key={o.id} className={'band__p p' + i}><Portrait creation={o} width={160} height={200} id={'bf' + i} /></span>)}
+          {WALL.slice(6, 10).map((o, i) => <span key={o.id} className={'band__p p' + i}><img src={STILLS[6 + i].src} alt="" loading="lazy" /></span>)}
         </div>
         <p className="display" data-reveal>nobody screenshots a menu.<br /><em>they screenshot this.</em></p>
         <p className="band__sub" data-reveal style={{ '--d': '.1s' }}>Every drink comes with a story card carrying your café’s name and handle. Your customers do the marketing.</p>

@@ -18,6 +18,7 @@ import Share from './screens/Share';
 import Mine from './screens/Mine';
 import Barista from './screens/Barista';
 import Kit from './screens/Kit';
+import KitStills from './screens/KitStills';
 
 // The website is at /, each café's customer menu at /c/:cafe (what the table QR code opens),
 // the order board at /barista.
@@ -48,6 +49,7 @@ export default function App() {
         <Route path="/barista" element={<Barista />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/kit" element={<Kit />} />
+        <Route path="/kit/stills" element={<KitStills />} />
       </Routes>
     </BrowserRouter>
   );

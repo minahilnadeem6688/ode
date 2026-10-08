@@ -5,7 +5,7 @@
  */
 import { createStage, dropGeometry, glossy, reducedMotion } from './stage';
 
-const NOISE = `
+export const NOISE = `
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
   float noise(vec2 p) {
     vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
@@ -14,7 +14,7 @@ const NOISE = `
   float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { v += a * noise(p); p = p * 2.03 + 7.1; a *= 0.5; } return v; }
 `;
 
-const LIQUID_FRAG = `
+export const LIQUID_FRAG = `
   uniform vec3 uC0; uniform vec3 uC1; uniform vec3 uC2; uniform vec3 uC3;
   uniform float uTime; uniform float uIntensity; uniform float uDropT; uniform float uSeed;
   varying vec2 vUv;
