@@ -2,6 +2,8 @@
  * The ode API. If it is not there (a plain static deploy, or offline), every screen falls back
  * to the on-device demo, so the app always works.
  */
+import { session } from './session';
+
 export const CAFE = 'demo';
 
 let health;
@@ -17,9 +19,11 @@ export class ApiError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
 
-async function call(path, { method = 'GET', body, staff } = {}) {
+async function call(path, { method = 'GET', body, staff, as } = {}) {
   const headers = { 'content-type': 'application/json' };
   if (staff) headers['x-ode-staff'] = staff;
+  const s = as && session.get(as);
+  if (s) headers.authorization = 'Bearer ' + s.token;
   const r = await fetch('/api' + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
   const data = await r.json().catch(() => ({}));
   if (!r.ok) throw new ApiError(r.status, data.detail || 'something went wrong');
@@ -50,10 +54,21 @@ export async function craft(input, onStage) {
 
 export const api = {
   cafe: () => call(`/cafes/${CAFE}`),
-  order: (creationId, size) => call(`/cafes/${CAFE}/orders`, { method: 'POST', body: { creationId, size } }),
+  order: (creationId, size) => call(`/cafes/${CAFE}/orders`, { method: 'POST', body: { creationId, size }, as: 'customer' }),
   orderStatus: (id) => call(`/orders/${id}`),
   rate: (id, rating, chips) => call(`/creations/${id}/rating`, { method: 'POST', body: { rating, chips } }),
-  board: (staff) => call(`/cafes/${CAFE}/board`, { staff }),
-  advance: (staff, id, status) => call(`/cafes/${CAFE}/orders/${id}`, { method: 'PATCH', body: { status }, staff }),
-  stock: (staff, item, out) => call(`/cafes/${CAFE}/stock/${item}`, { method: 'PUT', body: { out }, staff }),
+
+  // café team (signed in at /login, or with the café key on the board)
+  board: (staff) => call(`/cafes/${CAFE}/board`, { staff, as: 'team' }),
+  advance: (staff, id, status) => call(`/cafes/${CAFE}/orders/${id}`, { method: 'PATCH', body: { status }, staff, as: 'team' }),
+  stock: (staff, item, out) => call(`/cafes/${CAFE}/stock/${item}`, { method: 'PUT', body: { out }, staff, as: 'team' }),
+  stats: () => call(`/cafes/${CAFE}/stats`, { as: 'team' }),
+  leads: () => call('/leads', { as: 'team' }),
+  team: (cafe, key) => call('/auth/team', { method: 'POST', body: { cafe, key } }),
+
+  // customers
+  signup: (name, email, password) => call('/auth/signup', { method: 'POST', body: { name, email, password } }),
+  login: (email, password) => call('/auth/login', { method: 'POST', body: { email, password } }),
+  me: () => call('/me', { as: 'customer' }),
+  save: (id, on) => call(`/me/saved/${id}`, { method: on ? 'PUT' : 'DELETE', as: 'customer' }),
 };

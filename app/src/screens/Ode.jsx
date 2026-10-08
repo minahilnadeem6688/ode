@@ -6,6 +6,7 @@ import { Cup } from '../components/Three';
 import Icon from '../components/Icon';
 import { creations, orders } from '../lib/store';
 import { api } from '../lib/api';
+import { session } from '../lib/session';
 import './ode.css';
 
 const SIZES = [['regular', 'regular', 0], ['large', 'large', 150]];
@@ -27,10 +28,13 @@ export default function Ode() {
 
   function toggleSave() {
     if (saved) creations.unsave(c.id); else creations.save(c);
+    // signed-in customers keep it in their account too, on every phone
+    if (!c.local && session.get('customer')) api.save(c.id, !saved).catch(() => {});
     setSaved(!saved);
   }
   async function order() {
     if (!saved) creations.save(c);
+    if (!saved && !c.local && session.get('customer')) api.save(c.id, true).catch(() => {});
     if (c.local) return navigate('/order/' + orders.place(c, size).code);
     setBusy(true); setErr('');
     try {

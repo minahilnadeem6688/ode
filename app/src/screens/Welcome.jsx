@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { CafeBar, Mark } from '../components/Brand';
 import { Ambient } from '../components/Three';
 import { draft } from '../lib/store';
+import { useSession } from '../lib/session';
 import { EXAMPLES } from '../data/demoCafe';
 import './welcome.css';
 
@@ -10,6 +11,7 @@ export default function Welcome() {
   const navigate = useNavigate();
   const [text, setText] = useState(() => draft.get().text);
   const [picked, setPicked] = useState(null);
+  const me = useSession('customer');
 
   function go(path) {
     draft.set({ ...draft.get(), text: text.trim() });
@@ -59,7 +61,7 @@ export default function Welcome() {
         <button type="button" className="btn btn--honey btn--block btn--split" disabled={!text.trim()} onClick={() => go('/tune')}>
           <span>Write my ode</span><span aria-hidden="true">→</span>
         </button>
-        <p className="welcome__foot"><Link to="/me">my odes</Link><span>·</span><span>pay at the counter as usual</span></p>
+        <p className="welcome__foot"><Link to="/me">my odes</Link><span>·</span>{me ? <Link to="/account">{me.user.name.split(' ')[0].toLowerCase()}’s account</Link> : <Link to="/login">sign in</Link>}<span>·</span><span>pay at the counter</span></p>
       </div>
     </main>
   );

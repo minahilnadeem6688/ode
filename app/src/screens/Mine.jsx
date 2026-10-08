@@ -4,6 +4,7 @@ import { CafeBar, Mark, Portrait } from '../components/Brand';
 import { Ambient } from '../components/Three';
 import Icon from '../components/Icon';
 import { creations } from '../lib/store';
+import { useSession } from '../lib/session';
 import './mine.css';
 
 const when = (t) => {
@@ -14,13 +15,14 @@ const when = (t) => {
 export default function Mine() {
   const navigate = useNavigate();
   const all = creations.all();
+  const me = useSession('customer');
 
   return (
     <main className="screen mine" style={{ '--bg': 'linear-gradient(160deg, #FAF6F0, #F2EBE0)' }}>
       <Ambient variant="quiet" />
       <CafeBar left={<button type="button" className="iconbtn" aria-label="Back" onClick={() => navigate(MENU)}><Icon name="back" /></button>} />
       <h1 className="display mine__title rise">my <em className="cherry">odes</em></h1>
-      <p className="muted rise" style={{ '--d': '.06s', margin: '8px 0 0' }}>{all.length ? `${all.length} drink${all.length === 1 ? '' : 's'} written for you.` : 'Nothing saved yet.'}</p>
+      <p className="muted rise" style={{ '--d': '.06s', margin: '8px 0 0' }}>{all.length ? `${all.length} drink${all.length === 1 ? '' : 's'} saved on this phone.` : 'Nothing saved yet.'} {me ? <Link to="/account">See your account</Link> : <Link to="/login">Sign in to keep them on any phone</Link>}</p>
 
       {all.length ? (
         <div className="mine__grid">

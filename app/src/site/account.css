@@ -1,0 +1,72 @@
+/* Sign in: two doors, side by side */
+.auth { padding: 110px var(--pad) 40px; }
+.auth__switch { display: flex; align-items: center; gap: 6px; width: fit-content; margin: 0 auto 26px; padding: 5px 5px 5px 14px; border-radius: 999px; background: rgba(255, 255, 255, .7); box-shadow: inset 0 0 0 1px rgba(160, 135, 110, .18); }
+.auth__switch button { border: 0; border-radius: 999px; padding: 10px 16px; background: none; font: 600 14px var(--sans); color: var(--moss-deep); transition: background .3s, color .3s; }
+.auth__switch button[aria-selected='true'] { background: var(--roast); color: var(--cream); }
+.auth__grid { display: grid; gap: 18px; }
+.auth__side { position: relative; overflow: hidden; padding: 40px 30px; border-radius: 32px; display: grid; gap: 14px; align-content: start; animation: pageIn .7s var(--ease) both; }
+.auth__side--customer { background: #fff; box-shadow: var(--shadow-pop); }
+.auth__side--team { background: var(--roast-2); color: var(--cream); box-shadow: 0 30px 70px rgba(40, 30, 20, .25); animation-delay: .08s; }
+.auth__side .display { font-size: clamp(44px, 5.4vw, 68px); margin: 0; line-height: 1; }
+.auth__side--team .display { color: var(--cream); }
+.auth__side--team .display em { color: var(--honey); }
+.auth__side--team .eyebrow { color: var(--rain); }
+.auth__lede { margin: 0; color: var(--moss-deep); line-height: 1.6; max-width: 40ch; }
+.auth__side--team .auth__lede { color: var(--rain); }
+.auth__tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin-top: 6px; border-radius: 14px; background: var(--oyster); }
+.auth__tabs button { border: 0; border-radius: 10px; padding: 10px; background: none; font: 600 14px var(--sans); color: var(--moss-deep); transition: background .25s, box-shadow .25s; }
+.auth__tabs button[aria-selected='true'] { background: #fff; color: var(--roast); box-shadow: 0 2px 8px rgba(100, 80, 60, .1); }
+.auth__form { display: grid; gap: 14px; margin-top: 4px; animation: fadeIn .35s both; }
+.auth__field { display: grid; gap: 7px; font: 600 13.5px var(--sans); color: var(--moss-deep); }
+.auth__side--team .auth__field { color: var(--rain); }
+.auth__field .field { padding: 14px 16px; font-size: 16px; }
+.auth__side--team .field { background: rgba(250, 246, 240, .08); color: var(--cream); box-shadow: inset 0 0 0 1px rgba(250, 246, 240, .16); }
+.auth__side--team .field:focus { box-shadow: inset 0 0 0 2px var(--honey); }
+.auth__hint { margin: -6px 0 0; font-size: 13px; color: var(--moss); }
+.auth__err { margin: 0; padding: 11px 14px; border-radius: 12px; background: #FDF1EE; color: #A4483A; font-size: 14px; }
+.auth__small { margin: 4px 0 0; font-size: 14px; color: var(--rain); }
+.auth__small a { color: var(--honey); }
+.btn--cream { background: var(--cream); color: var(--roast); }
+.btn--cream:hover { background: #fff; }
+.auth__art { position: absolute; right: -30px; top: -20px; width: 230px; height: 200px; opacity: .35; pointer-events: none; }
+.auth__art > span { position: absolute; width: 90px; border-radius: 14px; overflow: hidden; line-height: 0; transform: rotate(calc(-12deg + var(--i) * 12deg)); left: calc(var(--i) * 56px); top: calc(var(--i) * 14px); animation: bob 8s ease-in-out infinite; animation-delay: calc(var(--i) * -2s); }
+.auth__art svg { width: 100%; height: auto; }
+.auth__grid.show-customer .auth__side--team, .auth__grid.show-team .auth__side--customer { display: none; }
+@media (min-width: 900px) {
+  .auth__switch { display: none; }
+  .auth__grid { grid-template-columns: 1.1fr 1fr; gap: 22px; }
+  .auth__grid .auth__side { display: grid !important; padding: 56px 52px; }
+}
+
+/* Customer account */
+.acct { padding-top: 120px; }
+.acct__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 24px; }
+.acct__head .display { font-size: clamp(52px, 7vw, 96px); margin: 0; line-height: .95; }
+.acct__head .auth__lede { margin-top: 14px; }
+.acct__actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.acct__loading { display: grid; place-items: center; padding: 80px 0; animation: breathe 2s ease-in-out infinite; }
+.taste { margin-top: 44px; padding: 32px; display: grid; gap: 28px; align-items: center; background: linear-gradient(140deg, #fff, var(--honey-pale)); }
+.taste .display { font-size: clamp(30px, 3.6vw, 44px); margin: 0; }
+.taste__moods { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.taste__moods .pill { box-shadow: none; text-transform: capitalize; }
+.taste__palette { display: flex; align-items: flex-end; gap: 10px; height: 150px; }
+.taste__palette span { flex: 1; height: calc(40% + min(var(--n), 6) * 10%); border-radius: 999px 999px 18px 18px; background: linear-gradient(180deg, color-mix(in oklab, var(--c), white 25%), var(--c)); box-shadow: inset 0 -10px 20px rgba(0, 0, 0, .06); animation: grow 1s var(--spring) both; animation-delay: calc(var(--i) * .08s); transform-origin: bottom; }
+@keyframes grow { from { transform: scaleY(.1); opacity: 0; } }
+@media (min-width: 900px) { .taste { grid-template-columns: 1.4fr 1fr; padding: 40px; } }
+.acct__sec { margin-top: 70px; }
+.acct__secHead { display: flex; align-items: baseline; gap: 14px; margin-bottom: 26px; }
+.acct__secHead .display { margin: 0; font-size: clamp(34px, 4vw, 52px); }
+.acct__secHead span { font: 600 14px var(--sans); color: var(--moss); }
+.acct__empty { color: var(--moss-deep); font-size: 17px; }
+.acct__empty a { color: var(--honey-deep); }
+.orders { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.orders li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; padding: 12px 18px 12px 12px; border-radius: 20px; background: #fff; box-shadow: var(--shadow-card); }
+.orders__art { width: 56px; height: 56px; border-radius: 14px; overflow: hidden; line-height: 0; }
+.orders__art svg { width: 100%; height: 100%; }
+.orders b { font: 400 19px var(--serif); display: block; }
+.orders small { color: var(--moss); font-size: 13px; }
+.orders__st { padding: 6px 11px; border-radius: 999px; font: 600 12px var(--sans); background: var(--oyster); color: var(--moss-deep); }
+.orders__st.s-ready { background: #E2EFE2; color: #3F6B44; }
+.orders__st.s-new, .orders__st.s-making { background: var(--honey-pale); color: var(--honey-deep); }
+.orders__price { display: none !important; }
+@media (min-width: 700px) { .orders li { grid-template-columns: auto 1fr auto auto; } .orders__price { display: block !important; font: 500 16px var(--sans) !important; } }

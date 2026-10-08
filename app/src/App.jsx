@@ -6,6 +6,9 @@ import Cafes from './site/Cafes';
 import Wall from './site/Wall';
 import Pricing from './site/Pricing';
 import GetOde from './site/GetOde';
+import Login from './site/Login';
+import Account from './site/Account';
+import Dashboard from './site/Dashboard';
 import Welcome from './screens/Welcome';
 import Tune from './screens/Tune';
 import Crafting from './screens/Crafting';
@@ -31,6 +34,8 @@ export default function App() {
           <Route path="wall" element={<Wall />} />
           <Route path="pricing" element={<Pricing />} />
           <Route path="get-ode" element={<GetOde />} />
+          <Route path="login" element={<Login />} />
+          <Route path="account" element={<Account />} />
           <Route path="*" element={<Home />} />
         </Route>
         <Route path="/c/:cafe" element={<Phone><Welcome /></Phone>} />
@@ -41,6 +46,7 @@ export default function App() {
         <Route path="/share/:id" element={<Phone><Share /></Phone>} />
         <Route path="/me" element={<Phone><Mine /></Phone>} />
         <Route path="/barista" element={<Barista />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/kit" element={<Kit />} />
       </Routes>
     </BrowserRouter>

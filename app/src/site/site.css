@@ -18,6 +18,7 @@
 .nav__links a.active { color: var(--cream); background: var(--roast); }
 .nav__end { display: flex; align-items: center; gap: 10px; position: relative; z-index: 2; }
 .nav__try { display: none; font: 600 14.5px var(--sans); text-decoration: none; padding: 10px 14px; border-radius: 999px; transition: background .2s; }
+.nav__dot { width: 26px; height: 26px; margin: -4px 8px -4px -6px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--honey); color: var(--roast); font: 600 13px var(--serif); text-transform: uppercase; }
 .nav__try:hover { background: rgba(160, 135, 110, .12); }
 .nav__cta { padding: 12px 18px; font-size: 14.5px; }
 .nav__burger { width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .7); display: grid; place-content: center; gap: 6px; box-shadow: inset 0 0 0 1px rgba(160, 135, 110, .18); }
