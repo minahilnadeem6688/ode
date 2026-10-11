@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MENU } from '../lib/paths';
 import { CafeBar } from '../components/Brand';
-import { Ambient } from '../components/Three';
 import Icon from '../components/Icon';
 import { draft } from '../lib/store';
 import { MOODS, FLAVOURS, DIETS } from '../data/demoCafe';
@@ -27,7 +26,6 @@ export default function Tune() {
 
   return (
     <main className="screen tune" style={{ '--bg': 'linear-gradient(160deg, #FAF6F0, #F2EBE0)' }}>
-      <Ambient variant="tune" />
       <CafeBar left={<button type="button" className="iconbtn" aria-label="Back" onClick={() => navigate(MENU)}><Icon name="back" /></button>} />
 
       <h1 className="display tune__title rise">a little <em>more</em><br />about you</h1>

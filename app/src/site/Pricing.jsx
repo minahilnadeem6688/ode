@@ -33,14 +33,14 @@ export default function Pricing() {
         <article className="plan plan--main card" data-reveal style={{ '--d': '.08s' }}>
           <span className="pill">after the pilot</span>
           <h2 className="display">Café</h2>
-          <p className="plan__price"><b>Rs 9,999</b><small>per month, per café</small></p>
+          <p className="plan__price"><b>Rs 9,999</b><small>per month, per café. About Rs 330 a day, less than one ode.</small></p>
           <ul>{INCLUDED.map((x) => <li key={x}><Icon name="check" size={18} width={2.4} />{x}</li>)}</ul>
           <Link to="/get-ode" className="btn btn--honey">Talk to us</Link>
         </article>
         <article className="plan card" data-reveal style={{ '--d': '.16s' }}>
           <span className="pill pill--soon">coming soon</span>
           <h2 className="display">Café Plus</h2>
-          <p className="plan__price"><b>More</b><small>for busy and multi-branch cafés</small></p>
+          <p className="plan__price"><b>Custom</b><small>for busy and multi-branch cafés</small></p>
           <p className="plan__sub">Insights on what your customers feel and order, specials from your best odes, a live café wall for your screen, and more than one location.</p>
           <Link to="/get-ode" className="btn btn--ghost">Join the list</Link>
         </article>

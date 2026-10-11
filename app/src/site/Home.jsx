@@ -85,6 +85,7 @@ export default function Home() {
           <Link to="/get-ode" className="btn btn--roast">Start a free pilot</Link>
           <Link to="/how-it-works" className="btn btn--ghost">See how it works</Link>
         </div>
+        <p className="hero__note">Free for 30 days. No card, no contract, no new hardware.</p>
       </Film>
 
       <section className="section">

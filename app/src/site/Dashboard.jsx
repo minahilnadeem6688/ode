@@ -52,7 +52,7 @@ function Overview() {
         <div className="tile"><small>Orders today</small><b>{s.today.orders}</b></div>
         <div className="tile"><small>Sales today</small><b>{pkr(s.today.revenue)}</b></div>
         <div className="tile"><small>Orders this week</small><b>{s.week.orders}</b><span>{pkr(s.week.revenue)}</span></div>
-        <div className="tile"><small>Average rating</small><b>{s.rating.average ? s.rating.average.toFixed(1) : '·'}</b><span>{s.rating.count} rating{s.rating.count === 1 ? '' : 's'}</span></div>
+        <div className="tile"><small>Average rating</small><b>{s.rating.average ? s.rating.average.toFixed(1) : '–'}</b><span>{s.rating.count} rating{s.rating.count === 1 ? '' : 's'}</span></div>
       </div>
       <div className="dash__grid">
         <section className="dash__card">

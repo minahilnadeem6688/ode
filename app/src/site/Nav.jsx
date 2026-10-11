@@ -12,6 +12,26 @@ export const PAGES = [
   ['/pricing', 'Pricing'],
 ];
 
+// Each screen's name in the browser tab.
+const TITLES = [
+  [/^\/$/, 'ode · a mood menu for cafés'],
+  [/^\/how-it-works/, 'How it works · ode'],
+  [/^\/for-cafes/, 'For cafés · ode'],
+  [/^\/wall/, 'The Wall · ode'],
+  [/^\/pricing/, 'Pricing · ode'],
+  [/^\/get-ode/, 'Start a free pilot · ode'],
+  [/^\/login/, 'Log in · ode'],
+  [/^\/account/, 'Your account · ode'],
+  [/^\/dashboard/, 'Dashboard · ode'],
+  [/^\/barista/, 'Order board · ode'],
+  [/^\/c\//, 'Menu · ode'],
+  [/^\/(tune|crafting)/, 'Writing your ode · ode'],
+  [/^\/ode\//, 'Your ode · ode'],
+  [/^\/order\//, 'Your order · ode'],
+  [/^\/share\//, 'Share your ode · ode'],
+  [/^\/me/, 'My odes · ode'],
+];
+
 // The one ode bar, on the website and on every app screen, so home is always a tap away.
 // `solid` keeps the frosted background on screens that paint their own colour underneath.
 export default function Nav({ solid = false }) {
@@ -23,6 +43,7 @@ export default function Nav({ solid = false }) {
   const who = team ? ['/dashboard', 'Dashboard'] : me ? ['/account', me.user.name.split(' ')[0]] : ['/login', 'Log in'];
 
   useLayoutEffect(() => setOpen(false), [pathname]);
+  useEffect(() => { document.title = (TITLES.find(([re]) => re.test(pathname)) || [, 'ode · a mood menu for cafés'])[1]; }, [pathname]);
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 12);
     on(); window.addEventListener('scroll', on, { passive: true });
@@ -38,8 +59,10 @@ export default function Nav({ solid = false }) {
           {PAGES.map(([to, label]) => <NavLink key={to} to={to}>{label}</NavLink>)}
         </div>
         <div className="nav__end">
-          <Link to={who[0]} className="nav__try nav__who">{(me || team) && <span className="nav__dot">{who[1][0]}</span>}{who[1]}</Link>
-          <Link to="/get-ode" className="btn btn--roast nav__cta">Get ode</Link>
+          {!team && <Link to={who[0]} className="nav__try nav__who">{me && <span className="nav__dot">{who[1][0]}</span>}{who[1]}</Link>}
+          {team
+            ? <Link to="/dashboard" className="btn btn--roast nav__cta">Dashboard</Link>
+            : <Link to="/get-ode" className="btn btn--roast nav__cta">Get ode</Link>}
           <button type="button" className={'nav__burger' + (open ? ' open' : '')} aria-label="Menu" aria-expanded={open} onClick={() => setOpen(!open)}><i /><i /></button>
         </div>
       </nav>

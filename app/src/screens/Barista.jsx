@@ -115,9 +115,11 @@ export default function Barista() {
 
       {problem === 'key' && (
         <form className="board__key" onSubmit={(e) => { e.preventDefault(); saveKey(draftKey.trim()); }}>
-          <label htmlFor="staffkey">Sign in to see your orders</label>
-          <p><a href="/login?as=team">Sign in as the café team</a>, or type the café key for this screen only.</p>
-          <div><input id="staffkey" type="password" autoComplete="off" value={draftKey} onChange={(e) => setDraftKey(e.target.value)} /><button type="submit" className="btn btn--honey">Open board</button></div>
+          <h2>Sign in to see your orders</h2>
+          <p>Use the café key from your ode setup. It stays on this screen only.</p>
+          <label htmlFor="staffkey" className="sr-only">Café key</label>
+          <div><input id="staffkey" type="password" autoComplete="off" placeholder="Café key" value={draftKey} onChange={(e) => setDraftKey(e.target.value)} /><button type="submit" className="btn btn--honey" disabled={!draftKey.trim()}>Open board</button></div>
+          <a className="board__team" href="/login?as=team">Or sign in as the café team</a>
         </form>
       )}
       {problem && problem !== 'key' && <p className="board__problem" role="alert">{problem}</p>}

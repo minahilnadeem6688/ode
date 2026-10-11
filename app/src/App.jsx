@@ -9,6 +9,7 @@ import GetOde from './site/GetOde';
 import Login from './site/Login';
 import Account from './site/Account';
 import Dashboard from './site/Dashboard';
+import NotFound from './site/NotFound';
 import Welcome from './screens/Welcome';
 import Tune from './screens/Tune';
 import Crafting from './screens/Crafting';
@@ -40,7 +41,7 @@ export default function App() {
           <Route path="get-ode" element={<GetOde />} />
           <Route path="login" element={<Login />} />
           <Route path="account" element={<Account />} />
-          <Route path="*" element={<Home />} />
+          <Route path="*" element={<NotFound />} />
         </Route>
         <Route path="/c/:cafe" element={<Phone><Welcome /></Phone>} />
         <Route path="/tune" element={<Phone><Tune /></Phone>} />

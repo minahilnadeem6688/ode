@@ -39,8 +39,11 @@
 .board__col--making .ticket__go { background: var(--honey); color: var(--roast); }
 .board__col--ready .ticket__go { background: transparent; color: var(--moss-deep); box-shadow: inset 0 0 0 1px rgba(160,135,110,.35); }
 
-.board__key { margin-top: 14px; padding: 18px; border-radius: 20px; background: rgba(250,246,240,.06); display: grid; gap: 8px; max-width: 460px; }
-.board__key label { font: 600 16px var(--sans); }
+.board__key { margin: 12vh auto 0; padding: 34px 30px 30px; border-radius: 24px; background: rgba(250,246,240,.06); display: grid; gap: 10px; max-width: 440px; text-align: center; }
+.board__key h2 { margin: 0; font: 380 30px/1.15 var(--serif); font-variation-settings: 'SOFT' 100; }
+.board__key input::placeholder { color: rgba(250,246,240,.45); }
+.board__team { justify-self: center; margin-top: 6px; color: var(--rain); font-size: 14px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .board__key p { margin: 0; color: var(--rain); font-size: 14px; }
 .board__key div { display: flex; gap: 8px; margin-top: 4px; }
 .board__key input { flex: 1; min-width: 0; border: 0; border-radius: 12px; padding: 12px 14px; background: rgba(250,246,240,.1); color: var(--cream); font: 500 16px var(--sans); }

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { MENU } from '../lib/paths';
 import { CafeBar } from '../components/Brand';
-import { Ambient } from '../components/Three';
 import Icon from '../components/Icon';
 import { creations } from '../lib/store';
 import { cafe } from '../data/demoCafe';
@@ -104,7 +103,6 @@ export default function Share() {
   }
   return (
     <main className="screen screen--narrow share" style={{ '--bg': 'linear-gradient(160deg, #F3ECE1, #E9DFD0)' }}>
-      <Ambient variant="quiet" />
       <CafeBar left={<button type="button" className="iconbtn" aria-label="Back" onClick={() => navigate(-1)}><Icon name="back" /></button>} />
       <div className="share__tabs" role="radiogroup" aria-label="Format">
         {[['story', 'story'], ['post', 'square post']].map(([f, l]) => <button key={f} type="button" role="radio" aria-checked={format === f} onClick={() => setFormat(f)}>{l}</button>)}

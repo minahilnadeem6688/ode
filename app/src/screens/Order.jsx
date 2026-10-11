@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { MENU } from '../lib/paths';
 import { CafeBar, Portrait } from '../components/Brand';
-import { Ambient } from '../components/Three';
 import Icon from '../components/Icon';
 import { creations, orders } from '../lib/store';
 import { api } from '../lib/api';
@@ -40,7 +39,7 @@ export default function Order() {
     return () => { live = false; clearTimeout(timer); };
   }, [code, local]);
 
-  if (!o && !local && !missing) return <main className="screen screen--narrow order" style={{ '--bg': 'linear-gradient(160deg, #FBF7F1, #F1E9DC)' }}><Ambient variant="order" /><CafeBar /></main>;
+  if (!o && !local && !missing) return <main className="screen screen--narrow order" style={{ '--bg': 'linear-gradient(160deg, #FBF7F1, #F1E9DC)' }}><CafeBar /></main>;
   if (!o) return <main className="screen"><CafeBar /><p className="muted">We couldn't find that order. <Link to={MENU}>Start again</Link>.</p></main>;
   const at = o.status === 'collected' ? STEPS.length - 1 : STEPS.findIndex((s) => s[0] === o.status);
 
@@ -52,7 +51,6 @@ export default function Order() {
 
   return (
     <main className="screen screen--narrow order" style={{ '--bg': 'linear-gradient(160deg, #FBF7F1, #F1E9DC)' }}>
-      <Ambient variant="order" />
       <CafeBar left={<button type="button" className="iconbtn" aria-label="Home" onClick={() => navigate(MENU)}><Icon name="close" /></button>} />
 
       <p className="eyebrow order__lbl rise">your order code</p>
