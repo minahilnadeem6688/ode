@@ -19,10 +19,13 @@ import Mine from './screens/Mine';
 import Barista from './screens/Barista';
 import Kit from './screens/Kit';
 import KitStills from './screens/KitStills';
+import Nav from './site/Nav';
 
 // The website is at /, each café's customer menu at /c/:cafe (what the table QR code opens),
 // the order board at /barista.
-const Phone = ({ children }) => <div className="shell">{children}</div>;
+// Every screen outside the website still carries the ode bar, so home is always one tap away.
+const Phone = ({ children }) => <div className="shell"><Nav solid />{children}</div>;
+const Framed = ({ children }) => <div className="framed"><Nav solid />{children}</div>;
 
 export default function App() {
   return (
@@ -46,8 +49,8 @@ export default function App() {
         <Route path="/order/:code" element={<Phone><Order /></Phone>} />
         <Route path="/share/:id" element={<Phone><Share /></Phone>} />
         <Route path="/me" element={<Phone><Mine /></Phone>} />
-        <Route path="/barista" element={<Barista />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/barista" element={<Framed><Barista /></Framed>} />
+        <Route path="/dashboard" element={<Framed><Dashboard /></Framed>} />
         <Route path="/kit" element={<Kit />} />
         <Route path="/kit/stills" element={<KitStills />} />
       </Routes>

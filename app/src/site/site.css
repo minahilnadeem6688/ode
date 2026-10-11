@@ -11,7 +11,12 @@
 @keyframes pop { from { opacity: 0; transform: scale(.3); } }
 @keyframes bob { 50% { translate: 0 -16px; } }
 
-/* Nav */
+/* Nav: shared by the website and the app screens */
+.nav, .sheet { --w: 1180px; --pad: max(20px, calc((100% - var(--w)) / 2)); }
+:where(.nav, .sheet) a { color: inherit; text-decoration: none; }
+.shell, .framed { --navh: 66px; padding-top: var(--navh); }
+.shell .screen, .framed .board, .framed .dash { min-height: calc(100svh - var(--navh)); }
+@media (min-width: 980px) { .framed .dash__side { top: var(--navh); height: calc(100svh - var(--navh)); } }
 .nav { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px var(--pad); transition: background .35s, box-shadow .35s, padding .35s; }
 .nav--solid { background: rgba(250, 246, 240, .84); backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); box-shadow: 0 1px 0 rgba(160, 135, 110, .14); padding-block: 11px; }
 .nav__home { text-decoration: none; position: relative; z-index: 2; }

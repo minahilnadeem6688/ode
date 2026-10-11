@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Lockup, Painted } from '../components/Brand';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { Painted } from '../components/Brand';
 import Icon from '../components/Icon';
 import { pantry } from '../data/demoCafe';
 import { api } from '../lib/api';
@@ -149,7 +149,6 @@ export default function Dashboard() {
   return (
     <div className="dash">
       <aside className="dash__side">
-        <Link to="/" className="dash__brand"><Lockup size={22} color="var(--cream)" /></Link>
         <p className="dash__cafe"><span>{team.cafe.name[0]}</span>{team.cafe.name}</p>
         <nav>
           {tabs.map(([id, label]) => <button key={id} type="button" className={tab === id ? 'on' : ''} onClick={() => setTab(id)}>{label}</button>)}

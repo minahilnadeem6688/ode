@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { MENU } from '../lib/paths';
 import { CafeBar } from '../components/Brand';
 import { Ambient } from '../components/Three';
 import Icon from '../components/Icon';
@@ -8,6 +9,7 @@ import { cafe } from '../data/demoCafe';
 import { drawShareCard, canvasBlob } from '../lib/shareCard';
 import './share.css';
 
+const touch = () => matchMedia('(pointer: coarse)').matches;
 const ios = () => /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 // What this browser can do with an image file: open the phone's share sheet, or copy it.
@@ -59,12 +61,21 @@ export default function Share() {
   }
 
   // Share: the phone's own share sheet, to Instagram, WhatsApp, Messages and the rest.
+  // Only the picture goes in: some apps drop the image when text comes with it.
   async function share() {
+    if (!can.share) {
+      // in-app browsers (opened from Instagram, WhatsApp and the like) have no share sheet
+      save();
+      setNote('This browser cannot open the share menu, so the picture was saved. Post it from your gallery, or open this page in Chrome or Safari to share directly.');
+      return;
+    }
     const file = new File([card.blob], fileName(), { type: 'image/png' });
     try {
-      await navigator.share({ files: [file], title: c.name, text: `${c.name} at ${cafe.name} ${cafe.handle}` });
+      await navigator.share({ files: [file] });
     } catch (e) {
-      if (e?.name !== 'AbortError') setNote('Sharing did not open here. Use Save image instead.');
+      if (e?.name === 'AbortError') return; // closed the sheet
+      save();
+      setNote('The share menu did not open, so the picture was saved instead. Post it from your gallery.');
     }
   }
 
@@ -78,7 +89,19 @@ export default function Share() {
     }
   }
 
-  if (!c) return null;
+  if (!c) {
+    return (
+      <main className="screen screen--narrow share share--missing">
+        <CafeBar left={<button type="button" className="iconbtn" aria-label="Back" onClick={() => navigate(-1)}><Icon name="back" /></button>} />
+        <h1 className="display">this ode is not <em>on this phone.</em></h1>
+        <p className="muted">Share cards are made from drinks written on this device. Write a new one, or find your saved odes in your account.</p>
+        <div className="share__btns">
+          <Link to={MENU} className="btn btn--cherry">Write an ode</Link>
+          <Link to="/account" className="btn btn--ghost">My account</Link>
+        </div>
+      </main>
+    );
+  }
   return (
     <main className="screen screen--narrow share" style={{ '--bg': 'linear-gradient(160deg, #F3ECE1, #E9DFD0)' }}>
       <Ambient variant="quiet" />
@@ -93,7 +116,7 @@ export default function Share() {
       <div className="share__cta">
         <div className="share__btns">
           <button type="button" className="btn btn--cherry" disabled={!card} onClick={save}><Icon name="download" size={20} /> Save image</button>
-          {can.share
+          {can.share || touch()
             ? <button type="button" className="btn btn--ghost" disabled={!card} onClick={share}><Icon name="share" size={20} /> Share</button>
             : can.copy && <button type="button" className="btn btn--ghost" disabled={!card} onClick={copy}><Icon name="copy" size={20} /> Copy image</button>}
         </div>

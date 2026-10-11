@@ -36,15 +36,16 @@ export function Painted({ item, size = 56 }) {
 
 // The café's own name sits on top; ode stays quiet beside it.
 export function CafeBar({ left, right }) {
+  const chip = (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, font: '600 14.5px var(--sans)' }}>
+      <span style={{ width: 30, height: 30, borderRadius: '50%', background: cafe.accent, display: 'grid', placeItems: 'center', color: '#FAF6F0', font: '600 13px var(--serif)' }}>{cafe.name[0]}</span>
+      {cafe.name}
+    </span>
+  );
   return (
     <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 0 10px', minHeight: 72 }}>
-      {left || (
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, font: '600 14.5px var(--sans)' }}>
-          <span style={{ width: 30, height: 30, borderRadius: '50%', background: cafe.accent, display: 'grid', placeItems: 'center', color: '#FAF6F0', font: '600 13px var(--serif)' }}>{cafe.name[0]}</span>
-          {cafe.name}
-        </span>
-      )}
-      {right || <Lockup size={17} />}
+      {left || chip}
+      {right || (left ? chip : null)}
     </header>
   );
 }

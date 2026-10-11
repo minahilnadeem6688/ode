@@ -18,8 +18,10 @@ export const draft = {
 
 export const creations = {
   all: () => read(localStorage, 'ode.creations', []),
-  get: (id) => creations.all().find((c) => c.id === id) || read(sessionStorage, 'ode.last', null),
-  remember: (c) => write(sessionStorage, 'ode.last', c), // the drink on screen, saved or not
+  // saved drinks first, then the recent ones seen on this device, so a share or order link
+  // still finds its drink after a reload or in a new tab
+  get: (id) => creations.all().find((c) => c.id === id) || read(localStorage, 'ode.seen', []).find((c) => c.id === id) || null,
+  remember: (c) => write(localStorage, 'ode.seen', [c, ...read(localStorage, 'ode.seen', []).filter((x) => x.id !== c.id)].slice(0, 20)),
   save: (c) => { const all = creations.all().filter((x) => x.id !== c.id); write(localStorage, 'ode.creations', [{ ...c, savedAt: Date.now() }, ...all]); },
   unsave: (id) => write(localStorage, 'ode.creations', creations.all().filter((x) => x.id !== id)),
   isSaved: (id) => creations.all().some((c) => c.id === id),

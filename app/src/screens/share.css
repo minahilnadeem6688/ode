@@ -18,3 +18,8 @@
   .share__preview.story { width: 340px; }
   .share__preview.post { width: 460px; }
 }
+
+.share--missing { gap: 16px; }
+.share--missing .display { margin: 24px 0 0; font-size: clamp(38px, 9vw, 54px); line-height: 1; }
+.share--missing .muted { margin: 0 0 8px; line-height: 1.6; }
+.share--missing .btn { text-decoration: none; }

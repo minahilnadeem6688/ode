@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Lockup, Painted } from '../components/Brand';
+import { Painted } from '../components/Brand';
 import Icon from '../components/Icon';
 import { orders, stock } from '../lib/store';
 import { api, online } from '../lib/api';
@@ -96,7 +96,7 @@ export default function Barista() {
   return (
     <main className="board">
       <header className="board__top">
-        <div className="board__brand"><Lockup size={20} color="var(--cream)" /><span>{cafe.name} · orders</span></div>
+        <div className="board__brand"><span>{cafe.name} · orders</span></div>
         <button type="button" className="board__pantrybtn" onClick={() => setPantryOpen(!pantryOpen)}>pantry{out.length ? ` · ${out.length} out` : ''}</button>
       </header>
 
