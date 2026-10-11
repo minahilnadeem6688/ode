@@ -8,6 +8,11 @@
 .hero__ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; animation: pageIn .9s .35s var(--ease) both; }
 @media (min-width: 1040px) { .hero { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; min-height: 100svh; } }
 
+/* Try it, now its own section under the opening scene */
+.tryzone { padding-top: 70px; }
+.tryzone .try { margin-top: 40px; animation: none; }
+@media (min-width: 980px) { .tryzone .try { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: center; gap: 40px; } }
+
 .try { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; animation: pageIn 1s .3s var(--ease) both; }
 .try__ask { padding: 18px; border-radius: var(--r-lg); background: rgba(255, 255, 255, .66); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: var(--shadow-pop); }
 .try__label { display: block; font: 600 12.5px var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--moss); margin-bottom: 10px; }

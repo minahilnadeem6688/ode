@@ -7,6 +7,7 @@ import { MENU } from '../lib/paths';
 import Icon from '../components/Icon';
 import { HERO, WALL } from './odes';
 import { STILLS } from './stills';
+import Film from './Film';
 import './home.css';
 
 const IDEAS = ['rainy afternoon, missing home', 'first day of summer', 'exam tomorrow', 'lazy sunday', 'late night drive', 'date night'];
@@ -76,28 +77,26 @@ function Count({ to, suffix = '' }) {
 }
 
 export default function Home() {
-  const hero = useRef(null);
-  const glow = (e) => {
-    const r = hero.current.getBoundingClientRect();
-    hero.current.style.setProperty('--mx', ((e.clientX - r.left) / r.width) * 100 + '%');
-    hero.current.style.setProperty('--my', ((e.clientY - r.top) / r.height) * 100 + '%');
-  };
   const names = WALL.map((o) => o.name);
 
   return (
     <>
-      <header ref={hero} className="hero" onPointerMove={glow}>
-        <div className="hero__text">
-          <p className="eyebrow">a mood menu for cafés</p>
-          <h1 className="display hero__title"><span>the menu</span><span>is <em>you.</em></span></h1>
-          <p className="lede">Your customers scan a QR code, say how they feel, and get a drink written only for them, from the ingredients on your shelf. A name, two lines, its own artwork, ready for your barista.</p>
-          <div className="hero__ctas">
-            <Link to="/get-ode" className="btn btn--roast">Start a free pilot</Link>
-            <Link to="/how-it-works" className="btn btn--ghost">See how it works</Link>
-          </div>
+      <Film>
+        <p className="eyebrow">a mood menu for cafés</p>
+        <h1 className="display hero__title"><span>the menu</span><span>is <em>you.</em></span></h1>
+        <p className="lede">Your customers scan a QR code, say how they feel, and get a drink written only for them, from the ingredients on your shelf. A name, two lines, its own artwork, ready for your barista.</p>
+        <div className="hero__ctas">
+          <Link to="/get-ode" className="btn btn--roast">Start a free pilot</Link>
+          <Link to="/how-it-works" className="btn btn--ghost">See how it works</Link>
         </div>
+      </Film>
+
+      <section className="section tryzone">
+        <p className="eyebrow" data-reveal>try it</p>
+        <h2 className="display h2" data-reveal style={{ '--d': '.08s' }}>write one <em>yourself.</em></h2>
+        <p className="lede" data-reveal style={{ '--d': '.14s' }}>The same engine your customers use, right here. Type a feeling and watch a drink get written for it.</p>
         <TryIt />
-      </header>
+      </section>
 
       <div className="marquee" aria-hidden="true">
         <div>{[...names, ...names].map((x, i) => <span key={i}><Mark size={16} />{x}</span>)}</div>
