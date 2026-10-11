@@ -1,7 +1,7 @@
 .how { display: grid; gap: 40px; }
 .how__steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
-.how__steps li { padding: 26px 26px 28px; border-radius: var(--r-lg); background: rgba(255, 255, 255, .5); box-shadow: inset 0 0 0 1px rgba(160, 135, 110, .14); opacity: .55; transform: scale(.98); transition: opacity .5s, transform .5s var(--ease), background .5s, box-shadow .5s; }
-.how__steps li.on { opacity: 1; transform: none; background: #fff; box-shadow: var(--shadow-pop); }
+.how__steps li { padding: 6px 0 8px 26px; border-left: 2px solid rgba(160, 135, 110, .2); opacity: .4; transition: opacity .5s, border-color .5s; }
+.how__steps li.on { opacity: 1; border-color: var(--honey-deep); }
 .how__n { font: 600 13px var(--sans); letter-spacing: .16em; color: var(--honey-deep); }
 .how__steps h2 { margin: 8px 0 8px; font: 380 clamp(28px, 3vw, 36px)/1.1 var(--serif); font-variation-settings: 'SOFT' 100; letter-spacing: -.015em; }
 .how__steps p { margin: 0; color: var(--moss-deep); line-height: 1.65; font-size: 16.5px; }
@@ -34,4 +34,3 @@
 
 .card.how__safe { display: flex; gap: 16px; align-items: flex-start; margin-top: 16px; padding: 22px 26px; background: #FDF1EE; color: #A4483A; box-shadow: inset 0 0 0 1px rgba(217, 128, 111, .25); }
 .how__safe p { margin: 0; line-height: 1.6; color: var(--roast); }
-.how__end { display: grid; justify-items: start; gap: 8px; }

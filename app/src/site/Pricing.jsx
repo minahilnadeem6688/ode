@@ -16,7 +16,7 @@ const FAQ = [
 export default function Pricing() {
   return (
     <>
-      <header className="phead" style={{ '--tint': 'rgba(212,165,90,.22)' }}>
+      <header className="phead">
         <p className="eyebrow">pricing</p>
         <h1 className="display">start free. <em>stay if you love it.</em></h1>
         <p className="lede">One simple plan in PKR, after a free month with your real customers.</p>

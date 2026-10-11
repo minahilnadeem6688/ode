@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Painted } from '../components/Brand';
 import Icon from '../components/Icon';
 import { MENU } from '../lib/paths';
@@ -12,7 +11,7 @@ const STEPS = [
   ['Tune it, if they like', 'Mood, hot or iced, sweetness and flavours are all optional. Allergies and diets are not suggestions: they are rules.'],
   ['Watch it being written', 'A cup fills while ode reads the mood, picks from your pantry, balances the drink and writes its two lines.'],
   ['Order and pay as usual', 'They pick a size and get a three-digit code. It lands on your barista board, and they pay at the counter.'],
-  ['Keep it, share it', 'They rate it, save it, and download a story card with your café’s name on it. That is where the word spreads.'],
+  ['Keep it, share it', 'They rate it, save it, and save or share a story card with your café’s name on it. That is where the word spreads.'],
 ];
 
 const PIPE = [
@@ -33,7 +32,7 @@ export default function How() {
 
   return (
     <>
-      <header className="phead" style={{ '--tint': 'rgba(196,133,140,.22)' }}>
+      <header className="phead">
         <p className="eyebrow">how it works</p>
         <h1 className="display">from a feeling <em>to a cup.</em></h1>
         <p className="lede">Six small moments for your customer, and nothing new for your team to learn. Try the real menu on the phone as you read.</p>
@@ -81,14 +80,6 @@ export default function How() {
         <div className="how__safe card" data-reveal>
           <Icon name="alert" size={22} />
           <p><b>Allergies are never left to chance.</b> Dairy-free means no dairy ingredient is even offered to the recipe. The barista sees every note in red on the ticket.</p>
-        </div>
-      </section>
-
-      <section className="section how__end" data-reveal>
-        <h2 className="display h2">see it from <em>the counter.</em></h2>
-        <div className="hero__ctas">
-          <Link to="/for-cafes" className="btn btn--roast">For cafés</Link>
-          <Link to={MENU} className="btn btn--ghost">Open the menu full screen</Link>
         </div>
       </section>
     </>

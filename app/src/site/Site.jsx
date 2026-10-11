@@ -68,14 +68,14 @@ export default function Site() {
       </main>
 
       <footer className="foot">
-        <div className="foot__cta" data-reveal>
+        {!['/get-ode', '/login', '/account', '/dashboard'].includes(pathname) && <div className="foot__cta" data-reveal>
           <Mark size={54} />
           <p className="display">your café, <em>written in.</em></p>
           <div className="foot__btns">
             <Link to="/get-ode" className="btn btn--honey">Start a free pilot</Link>
             <Link to={MENU} className="btn foot__ghost">Try it as a customer</Link>
           </div>
-        </div>
+        </div>}
         <div className="foot__grid">
           <div>
             <Lockup size={22} color="var(--cream)" />

@@ -23,7 +23,7 @@ export default function GetOde() {
 
   return (
     <>
-      <header className="phead" style={{ '--tint': 'rgba(196,133,140,.22)' }}>
+      <header className="phead">
         <p className="eyebrow">get ode</p>
         <h1 className="display">bring ode to <em>your café.</em></h1>
         <p className="lede">Tell us a little about your café. We will set up a free 30-day pilot with you.</p>

@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { Mark } from '../components/Brand';
 import { BoardDemo, PantryDemo, PriceCalc, TableCard } from './CafeTools';
 import './cafes.css';
 
@@ -20,7 +19,7 @@ const SOON = [
 export default function Cafes() {
   return (
     <>
-      <header className="phead" style={{ '--tint': 'rgba(212,165,90,.24)' }}>
+      <header className="phead">
         <p className="eyebrow">for cafés</p>
         <h1 className="display">everything your counter <em>needs.</em></h1>
         <p className="lede">A menu your customers remember, a calm board for your team, and prices that follow your costs. Play with each part below: these are the real thing.</p>
@@ -62,22 +61,12 @@ export default function Cafes() {
       <section className="section">
         <p className="eyebrow" data-reveal>and also</p>
         <h2 className="display h2" data-reveal style={{ '--d': '.06s' }}>the small things <em>that matter.</em></h2>
-        <div className="feats">
+        <dl className="feats">
           {FEATURES.map(([t, d], i) => (
-            <article key={t} className="feat card" data-reveal style={{ '--d': 0.05 * i + 's' }}>
-              <span className="feat__dot"><Mark size={18} /></span>
-              <h3>{t}</h3>
-              <p>{d}</p>
-            </article>
+            <div key={t} className="feat" data-reveal style={{ '--d': 0.04 * i + 's' }}><dt>{t}</dt><dd>{d}</dd></div>
           ))}
-          {SOON.map(([t, d], i) => (
-            <article key={t} className="feat feat--soon card" data-reveal style={{ '--d': 0.05 * i + 's' }}>
-              <span className="pill pill--soon">coming soon</span>
-              <h3>{t}</h3>
-              <p>{d}</p>
-            </article>
-          ))}
-        </div>
+        </dl>
+        <p className="feats__soon" data-reveal><span className="pill pill--soon">coming soon</span>{SOON.map(([t]) => t).join(' · ')}</p>
       </section>
     </>
   );

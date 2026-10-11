@@ -7,6 +7,9 @@
 .wrap { padding-inline: var(--pad); }
 .lede { font-size: clamp(16.5px, 1.5vw, 19.5px); line-height: 1.65; color: var(--moss-deep); max-width: 48ch; margin: 22px 0 0; }
 .h2 { font-size: clamp(40px, 5.6vw, 76px); max-width: 18ch; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+@keyframes pop { from { opacity: 0; transform: scale(.3); } }
+@keyframes bob { 50% { translate: 0 -16px; } }
 
 /* Nav */
 .nav { position: fixed; inset: 0 0 auto; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px var(--pad); transition: background .35s, box-shadow .35s, padding .35s; }
@@ -30,7 +33,7 @@
   .nav__burger { display: none; }
 }
 
-.sheet { position: fixed; inset: 0; z-index: 40; display: grid; align-content: center; gap: 6px; padding: 90px 28px 40px; background: radial-gradient(600px 400px at 90% 10%, rgba(196, 133, 140, .22), transparent 60%), radial-gradient(600px 500px at 0% 100%, rgba(212, 165, 90, .22), transparent 60%), var(--cream); clip-path: circle(0 at calc(100% - 42px) 38px); transition: clip-path .6s var(--ease); pointer-events: none; }
+.sheet { position: fixed; inset: 0; z-index: 40; display: grid; align-content: center; gap: 6px; padding: 90px 28px 40px; background: var(--cream); clip-path: circle(0 at calc(100% - 42px) 38px); transition: clip-path .6s var(--ease); pointer-events: none; }
 .sheet.open { clip-path: circle(150% at calc(100% - 42px) 38px); pointer-events: auto; }
 .sheet a { font: 340 44px/1.15 var(--serif); font-variation-settings: 'SOFT' 100; letter-spacing: -.02em; text-decoration: none; opacity: 0; transform: translateY(18px); transition: opacity .4s, transform .5s var(--ease); }
 .sheet.open a { opacity: 1; transform: none; transition-delay: calc(.12s + var(--i) * .05s); }
@@ -49,7 +52,6 @@
 /* Page header used by inner pages */
 .phead { position: relative; padding: 150px var(--pad) 60px; overflow: hidden; }
 .phead .display { font-size: clamp(54px, 9vw, 120px); line-height: .95; max-width: 14ch; }
-.phead::before { content: ''; position: absolute; inset: -20% -10% auto auto; width: 70vw; height: 70vw; max-width: 900px; max-height: 900px; border-radius: 50%; background: radial-gradient(circle, var(--tint, rgba(212, 165, 90, .2)), transparent 62%); pointer-events: none; animation: drift 14s ease-in-out infinite; }
 @keyframes drift { 50% { transform: translate(-4%, 6%) scale(1.06); } }
 
 /* Building blocks */
@@ -80,5 +82,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   [data-reveal] { opacity: 1; transform: none; transition: none; }
-  .page, .phead::before { animation: none; }
+  .page { animation: none; }
 }
