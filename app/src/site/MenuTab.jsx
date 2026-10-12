@@ -150,7 +150,7 @@ function Preview() {
               <li key={p.id} className={i === 0 ? 'first' : ''}>
                 <span>{i === 0 ? 'They get' : 'Next best'}</span>
                 <b>{p.name}</b>
-                <small>{TEMP[p.temperature]} · {pkr(p.price)}{p.because.length ? ' · ' + p.because.join(', ') : ''}{p.swaps.length ? ' · ' + p.swaps.map((s) => s.to.toLowerCase()).join(', ') : ''}</small>
+                <small>{TEMP[p.temperature]} · {pkr(p.price)}{p.because.length ? ' · ' + p.because.join(' · ') : ''}{p.swaps.length ? ' · ' + p.swaps.map((s) => s.to.toLowerCase()).join(', ') : ''}</small>
               </li>
             ))}
           </ol>

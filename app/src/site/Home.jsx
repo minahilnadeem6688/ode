@@ -82,7 +82,7 @@ export default function Home() {
       <Film>
         <p className="eyebrow">a mood menu for cafés</p>
         <h1 className="display hero__title"><span>the menu</span><span>is <em>you.</em></span></h1>
-        <p className="lede">Your customers scan a QR code, say how they feel, and get a drink written only for them, from the ingredients on your shelf.</p>
+        <p className="lede">Your customers scan a QR code, say how they feel, and get the drink on your menu that fits, with a name and two lines written only for them.</p>
         <div className="hero__ctas">
           <Link to="/get-ode" className="btn btn--roast">Start a free pilot</Link>
           <Link to="/how-it-works" className="btn btn--ghost">See how it works</Link>

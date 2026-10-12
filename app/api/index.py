@@ -453,6 +453,15 @@ def suggest(cafe_id: str, x_ode_staff: Optional[str] = Header(None), authorizati
     return menu_view(c, cafe_id)
 
 
+def because(mood, r, fams):
+    """Why a drink fits, in words an owner can read: "suits nostalgic", "spicy and caramel notes"."""
+    out = [f"suits {mood['primary']}"] if mood["primary"] in (r.get("moods") or []) else []
+    notes = [f for f in mood["families"] if f in fams][:2]
+    if notes:
+        out.append(" and ".join(notes) + " notes")
+    return out
+
+
 @app.post("/api/cafes/{cafe_id}/menu/preview")
 def preview(cafe_id: str, body: CraftIn, x_ode_staff: Optional[str] = Header(None), authorization: Optional[str] = Header(None)):
     """The drinks a guest with this mood would get, best first, without making anything."""
@@ -472,8 +481,7 @@ def preview(cafe_id: str, body: CraftIn, x_ode_staff: Optional[str] = Header(Non
         picks.append({
             "id": r["id"], "name": r["name"], "temperature": r["temperature"],
             "price": house.price_for(c["cafe"], r, made), "swaps": made["swaps"],
-            "because": [x for x in [f"suits {mood['primary']}" if mood["primary"] in (r.get("moods") or []) else None,
-                                    *[f"{f}" for f in mood["families"] if f in fams]] if x][:3],
+            "because": because(mood, r, fams),
         })
     return {"mood": mood, "picks": picks}
 

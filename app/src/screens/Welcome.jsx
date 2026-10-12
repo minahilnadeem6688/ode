@@ -36,7 +36,7 @@ export default function Welcome() {
         <h1 className="display rise" style={{ '--d': '.08s' }}>
           tell us how<br />you <em>feel.</em>
         </h1>
-        <p className="muted rise" style={{ '--d': '.16s' }}>There's no menu here. Say it any way you like and we'll write a drink that exists only for you.</p>
+        <p className="muted rise" style={{ '--d': '.16s' }}>Say it any way you like. We'll pick the drink on our menu that fits, and write it a name just for you.</p>
       </section>
 
       <section className="welcome__ask rise" style={{ '--d': '.24s' }}>
