@@ -1,474 +1,903 @@
 {
- "cafe": {
-  "id": "demo",
-  "name": "Demo Café",
-  "handle": "@democafe",
-  "accent": "#6B4A3A",
-  "margin": 3.2,
-  "minPrice": 490,
-  "maxPrice": 1200,
-  "maxIngredients": 5
- },
- "pantry": [
-  {
-   "id": "espresso",
-   "name": "Espresso",
-   "category": "base",
-   "color": "#6B4A3A",
-   "cost": 70,
-   "unit": "double shot",
-   "temps": [
-    "hot",
-    "cold"
-   ],
-   "families": [
+  "cafe": {
+    "id": "demo",
+    "name": "Demo Café",
+    "handle": "@democafe",
+    "accent": "#6B4A3A",
+    "margin": 3.2,
+    "minPrice": 490,
+    "maxPrice": 1200,
+    "maxIngredients": 5,
+    "mode": "approved"
+  },
+  "pantry": [
+    {
+      "id": "espresso",
+      "name": "Espresso",
+      "category": "base",
+      "color": "#6B4A3A",
+      "cost": 70,
+      "unit": "double shot",
+      "temps": [
+        "hot",
+        "cold"
+      ],
+      "families": [
+        "chocolate",
+        "nutty",
+        "earthy"
+      ],
+      "caffeine": true
+    },
+    {
+      "id": "cold_brew",
+      "name": "Cold brew",
+      "category": "base",
+      "color": "#5A3B2C",
+      "cost": 80,
+      "unit": "120 ml",
+      "temps": [
+        "cold"
+      ],
+      "families": [
+        "chocolate",
+        "earthy"
+      ],
+      "caffeine": true
+    },
+    {
+      "id": "black_tea",
+      "name": "Black tea",
+      "category": "base",
+      "color": "#B07A45",
+      "cost": 25,
+      "unit": "1 bag, steeped",
+      "temps": [
+        "hot",
+        "cold",
+        "room"
+      ],
+      "families": [
+        "earthy",
+        "spicy"
+      ],
+      "caffeine": true
+    },
+    {
+      "id": "matcha",
+      "name": "Matcha",
+      "category": "base",
+      "color": "#9DB86B",
+      "cost": 110,
+      "unit": "2 g",
+      "temps": [
+        "hot",
+        "cold"
+      ],
+      "families": [
+        "earthy",
+        "herbal"
+      ],
+      "caffeine": true
+    },
+    {
+      "id": "hibiscus",
+      "name": "Hibiscus tea",
+      "category": "base",
+      "color": "#C95B78",
+      "cost": 35,
+      "unit": "1 bag, steeped",
+      "temps": [
+        "hot",
+        "cold",
+        "room"
+      ],
+      "families": [
+        "floral",
+        "fruity"
+      ]
+    },
+    {
+      "id": "soda",
+      "name": "Sparkling water",
+      "category": "fizz",
+      "color": "#CFE3EC",
+      "cost": 30,
+      "unit": "120 ml",
+      "temps": [
+        "cold"
+      ],
+      "families": [
+        "citrus",
+        "fruity"
+      ]
+    },
+    {
+      "id": "milk",
+      "name": "Whole milk",
+      "category": "milk",
+      "color": "#F3EADB",
+      "cost": 40,
+      "unit": "180 ml",
+      "temps": [
+        "hot",
+        "cold"
+      ],
+      "families": [
+        "nutty",
+        "caramel",
+        "chocolate"
+      ],
+      "allergens": [
+        "dairy"
+      ]
+    },
+    {
+      "id": "oat_milk",
+      "name": "Oat milk",
+      "category": "milk",
+      "color": "#E9DCC3",
+      "cost": 90,
+      "unit": "180 ml",
+      "temps": [
+        "hot",
+        "cold"
+      ],
+      "families": [
+        "nutty",
+        "earthy",
+        "caramel"
+      ]
+    },
+    {
+      "id": "coconut_milk",
+      "name": "Coconut milk",
+      "category": "milk",
+      "color": "#F4EEE2",
+      "cost": 80,
+      "unit": "150 ml",
+      "temps": [
+        "hot",
+        "cold"
+      ],
+      "families": [
+        "tropical",
+        "nutty"
+      ]
+    },
+    {
+      "id": "cocoa",
+      "name": "Dark cocoa",
+      "category": "flavour",
+      "color": "#7A4E3A",
+      "cost": 45,
+      "unit": "15 g",
+      "temps": [
+        "hot",
+        "cold"
+      ],
+      "families": [
+        "chocolate"
+      ]
+    },
+    {
+      "id": "caramel",
+      "name": "Salted caramel",
+      "category": "sweet",
+      "color": "#D49A55",
+      "cost": 35,
+      "unit": "20 ml",
+      "temps": [
+        "hot",
+        "cold"
+      ],
+      "families": [
+        "caramel"
+      ],
+      "allergens": [
+        "dairy"
+      ]
+    },
+    {
+      "id": "vanilla",
+      "name": "Vanilla",
+      "category": "sweet",
+      "color": "#F1E3C2",
+      "cost": 30,
+      "unit": "15 ml",
+      "temps": [
+        "hot",
+        "cold",
+        "room"
+      ],
+      "families": [
+        "caramel",
+        "floral"
+      ]
+    },
+    {
+      "id": "honey",
+      "name": "Honey",
+      "category": "sweet",
+      "color": "#E3B04B",
+      "cost": 30,
+      "unit": "15 ml",
+      "temps": [
+        "hot",
+        "cold",
+        "room"
+      ],
+      "families": [
+        "floral",
+        "earthy"
+      ],
+      "notVegan": true
+    },
+    {
+      "id": "rose",
+      "name": "Rose syrup",
+      "category": "flavour",
+      "color": "#E3A3B0",
+      "cost": 30,
+      "unit": "15 ml",
+      "temps": [
+        "hot",
+        "cold",
+        "room"
+      ],
+      "families": [
+        "floral"
+      ]
+    },
+    {
+      "id": "lavender",
+      "name": "Lavender",
+      "category": "flavour",
+      "color": "#B8A6D9",
+      "cost": 35,
+      "unit": "10 ml",
+      "temps": [
+        "hot",
+        "cold"
+      ],
+      "families": [
+        "floral",
+        "herbal"
+      ]
+    },
+    {
+      "id": "cardamom",
+      "name": "Cardamom",
+      "category": "spice",
+      "color": "#A9B57A",
+      "cost": 15,
+      "unit": "2 pods, crushed",
+      "temps": [
+        "hot",
+        "cold",
+        "room"
+      ],
+      "families": [
+        "spicy",
+        "earthy"
+      ]
+    },
+    {
+      "id": "cinnamon",
+      "name": "Cinnamon",
+      "category": "spice",
+      "color": "#B7703F",
+      "cost": 10,
+      "unit": "a pinch",
+      "temps": [
+        "hot",
+        "cold",
+        "room"
+      ],
+      "families": [
+        "spicy",
+        "caramel"
+      ]
+    },
+    {
+      "id": "ginger",
+      "name": "Fresh ginger",
+      "category": "spice",
+      "color": "#E2B36A",
+      "cost": 15,
+      "unit": "3 thin slices",
+      "temps": [
+        "hot",
+        "cold",
+        "room"
+      ],
+      "families": [
+        "spicy",
+        "citrus"
+      ]
+    },
+    {
+      "id": "lychee",
+      "name": "Lychee",
+      "category": "fruit",
+      "color": "#F2C6CC",
+      "cost": 70,
+      "unit": "4 lychees",
+      "temps": [
+        "cold",
+        "room"
+      ],
+      "families": [
+        "fruity",
+        "floral",
+        "tropical"
+      ]
+    },
+    {
+      "id": "lemon",
+      "name": "Lemon",
+      "category": "fruit",
+      "color": "#F4D35E",
+      "cost": 15,
+      "unit": "half, squeezed",
+      "temps": [
+        "hot",
+        "cold",
+        "room"
+      ],
+      "families": [
+        "citrus"
+      ]
+    },
+    {
+      "id": "orange",
+      "name": "Orange",
+      "category": "fruit",
+      "color": "#F2A65A",
+      "cost": 25,
+      "unit": "half, squeezed",
+      "temps": [
+        "cold",
+        "room"
+      ],
+      "families": [
+        "citrus",
+        "fruity"
+      ]
+    },
+    {
+      "id": "strawberry",
+      "name": "Strawberry",
+      "category": "fruit",
+      "color": "#E87A86",
+      "cost": 60,
+      "unit": "4 berries",
+      "temps": [
+        "cold",
+        "room"
+      ],
+      "families": [
+        "fruity"
+      ]
+    },
+    {
+      "id": "mango",
+      "name": "Mango",
+      "category": "fruit",
+      "color": "#F5B841",
+      "cost": 60,
+      "unit": "60 g",
+      "temps": [
+        "cold"
+      ],
+      "families": [
+        "tropical",
+        "fruity"
+      ]
+    },
+    {
+      "id": "mint",
+      "name": "Mint",
+      "category": "finish",
+      "color": "#9CC9A4",
+      "cost": 10,
+      "unit": "6 leaves",
+      "temps": [
+        "hot",
+        "cold",
+        "room"
+      ],
+      "families": [
+        "herbal",
+        "citrus"
+      ]
+    },
+    {
+      "id": "ice",
+      "name": "Ice",
+      "category": "finish",
+      "color": "#DCEBF0",
+      "cost": 5,
+      "unit": "a glass",
+      "temps": [
+        "cold"
+      ],
+      "families": []
+    },
+    {
+      "id": "hazelnut",
+      "name": "Hazelnut",
+      "category": "sweet",
+      "color": "#B98559",
+      "cost": 40,
+      "unit": "15 ml",
+      "temps": [
+        "hot",
+        "cold"
+      ],
+      "families": [
+        "nutty"
+      ],
+      "allergens": [
+        "nuts"
+      ]
+    }
+  ],
+  "moods": [
+    "calm",
+    "nostalgic",
+    "energetic",
+    "tired",
+    "romantic",
+    "cozy",
+    "playful",
+    "stressed"
+  ],
+  "flavours": [
     "chocolate",
-    "nutty",
-    "earthy"
-   ],
-   "caffeine": true
-  },
-  {
-   "id": "cold_brew",
-   "name": "Cold brew",
-   "category": "base",
-   "color": "#5A3B2C",
-   "cost": 80,
-   "unit": "120 ml",
-   "temps": [
-    "cold"
-   ],
-   "families": [
-    "chocolate",
-    "earthy"
-   ],
-   "caffeine": true
-  },
-  {
-   "id": "black_tea",
-   "name": "Black tea",
-   "category": "base",
-   "color": "#B07A45",
-   "cost": 25,
-   "unit": "1 bag, steeped",
-   "temps": [
-    "hot",
-    "cold",
-    "room"
-   ],
-   "families": [
-    "earthy",
-    "spicy"
-   ],
-   "caffeine": true
-  },
-  {
-   "id": "matcha",
-   "name": "Matcha",
-   "category": "base",
-   "color": "#9DB86B",
-   "cost": 110,
-   "unit": "2 g",
-   "temps": [
-    "hot",
-    "cold"
-   ],
-   "families": [
-    "earthy",
-    "herbal"
-   ],
-   "caffeine": true
-  },
-  {
-   "id": "hibiscus",
-   "name": "Hibiscus tea",
-   "category": "base",
-   "color": "#C95B78",
-   "cost": 35,
-   "unit": "1 bag, steeped",
-   "temps": [
-    "hot",
-    "cold",
-    "room"
-   ],
-   "families": [
-    "floral",
-    "fruity"
-   ]
-  },
-  {
-   "id": "soda",
-   "name": "Sparkling water",
-   "category": "fizz",
-   "color": "#CFE3EC",
-   "cost": 30,
-   "unit": "120 ml",
-   "temps": [
-    "cold"
-   ],
-   "families": [
     "citrus",
-    "fruity"
-   ]
-  },
-  {
-   "id": "milk",
-   "name": "Whole milk",
-   "category": "milk",
-   "color": "#F3EADB",
-   "cost": 40,
-   "unit": "180 ml",
-   "temps": [
-    "hot",
-    "cold"
-   ],
-   "families": [
-    "nutty",
-    "caramel",
-    "chocolate"
-   ],
-   "allergens": [
-    "dairy"
-   ]
-  },
-  {
-   "id": "oat_milk",
-   "name": "Oat milk",
-   "category": "milk",
-   "color": "#E9DCC3",
-   "cost": 90,
-   "unit": "180 ml",
-   "temps": [
-    "hot",
-    "cold"
-   ],
-   "families": [
+    "floral",
     "nutty",
     "earthy",
-    "caramel"
-   ]
-  },
-  {
-   "id": "coconut_milk",
-   "name": "Coconut milk",
-   "category": "milk",
-   "color": "#F4EEE2",
-   "cost": 80,
-   "unit": "150 ml",
-   "temps": [
-    "hot",
-    "cold"
-   ],
-   "families": [
-    "tropical",
-    "nutty"
-   ]
-  },
-  {
-   "id": "cocoa",
-   "name": "Dark cocoa",
-   "category": "flavour",
-   "color": "#7A4E3A",
-   "cost": 45,
-   "unit": "15 g",
-   "temps": [
-    "hot",
-    "cold"
-   ],
-   "families": [
-    "chocolate"
-   ]
-  },
-  {
-   "id": "caramel",
-   "name": "Salted caramel",
-   "category": "sweet",
-   "color": "#D49A55",
-   "cost": 35,
-   "unit": "20 ml",
-   "temps": [
-    "hot",
-    "cold"
-   ],
-   "families": [
-    "caramel"
-   ],
-   "allergens": [
-    "dairy"
-   ]
-  },
-  {
-   "id": "vanilla",
-   "name": "Vanilla",
-   "category": "sweet",
-   "color": "#F1E3C2",
-   "cost": 30,
-   "unit": "15 ml",
-   "temps": [
-    "hot",
-    "cold",
-    "room"
-   ],
-   "families": [
-    "caramel",
-    "floral"
-   ]
-  },
-  {
-   "id": "honey",
-   "name": "Honey",
-   "category": "sweet",
-   "color": "#E3B04B",
-   "cost": 30,
-   "unit": "15 ml",
-   "temps": [
-    "hot",
-    "cold",
-    "room"
-   ],
-   "families": [
-    "floral",
-    "earthy"
-   ],
-   "notVegan": true
-  },
-  {
-   "id": "rose",
-   "name": "Rose syrup",
-   "category": "flavour",
-   "color": "#E3A3B0",
-   "cost": 30,
-   "unit": "15 ml",
-   "temps": [
-    "hot",
-    "cold",
-    "room"
-   ],
-   "families": [
-    "floral"
-   ]
-  },
-  {
-   "id": "lavender",
-   "name": "Lavender",
-   "category": "flavour",
-   "color": "#B8A6D9",
-   "cost": 35,
-   "unit": "10 ml",
-   "temps": [
-    "hot",
-    "cold"
-   ],
-   "families": [
-    "floral",
-    "herbal"
-   ]
-  },
-  {
-   "id": "cardamom",
-   "name": "Cardamom",
-   "category": "spice",
-   "color": "#A9B57A",
-   "cost": 15,
-   "unit": "2 pods, crushed",
-   "temps": [
-    "hot",
-    "cold",
-    "room"
-   ],
-   "families": [
-    "spicy",
-    "earthy"
-   ]
-  },
-  {
-   "id": "cinnamon",
-   "name": "Cinnamon",
-   "category": "spice",
-   "color": "#B7703F",
-   "cost": 10,
-   "unit": "a pinch",
-   "temps": [
-    "hot",
-    "cold",
-    "room"
-   ],
-   "families": [
-    "spicy",
-    "caramel"
-   ]
-  },
-  {
-   "id": "ginger",
-   "name": "Fresh ginger",
-   "category": "spice",
-   "color": "#E2B36A",
-   "cost": 15,
-   "unit": "3 thin slices",
-   "temps": [
-    "hot",
-    "cold",
-    "room"
-   ],
-   "families": [
-    "spicy",
-    "citrus"
-   ]
-  },
-  {
-   "id": "lychee",
-   "name": "Lychee",
-   "category": "fruit",
-   "color": "#F2C6CC",
-   "cost": 70,
-   "unit": "4 lychees",
-   "temps": [
-    "cold",
-    "room"
-   ],
-   "families": [
     "fruity",
-    "floral",
-    "tropical"
-   ]
-  },
-  {
-   "id": "lemon",
-   "name": "Lemon",
-   "category": "fruit",
-   "color": "#F4D35E",
-   "cost": 15,
-   "unit": "half, squeezed",
-   "temps": [
-    "hot",
-    "cold",
-    "room"
-   ],
-   "families": [
-    "citrus"
-   ]
-  },
-  {
-   "id": "orange",
-   "name": "Orange",
-   "category": "fruit",
-   "color": "#F2A65A",
-   "cost": 25,
-   "unit": "half, squeezed",
-   "temps": [
-    "cold",
-    "room"
-   ],
-   "families": [
-    "citrus",
-    "fruity"
-   ]
-  },
-  {
-   "id": "strawberry",
-   "name": "Strawberry",
-   "category": "fruit",
-   "color": "#E87A86",
-   "cost": 60,
-   "unit": "4 berries",
-   "temps": [
-    "cold",
-    "room"
-   ],
-   "families": [
-    "fruity"
-   ]
-  },
-  {
-   "id": "mango",
-   "name": "Mango",
-   "category": "fruit",
-   "color": "#F5B841",
-   "cost": 60,
-   "unit": "60 g",
-   "temps": [
-    "cold"
-   ],
-   "families": [
-    "tropical",
-    "fruity"
-   ]
-  },
-  {
-   "id": "mint",
-   "name": "Mint",
-   "category": "finish",
-   "color": "#9CC9A4",
-   "cost": 10,
-   "unit": "6 leaves",
-   "temps": [
-    "hot",
-    "cold",
-    "room"
-   ],
-   "families": [
+    "spicy",
     "herbal",
-    "citrus"
-   ]
-  },
-  {
-   "id": "ice",
-   "name": "Ice",
-   "category": "finish",
-   "color": "#DCEBF0",
-   "cost": 5,
-   "unit": "a glass",
-   "temps": [
-    "cold"
-   ],
-   "families": []
-  },
-  {
-   "id": "hazelnut",
-   "name": "Hazelnut",
-   "category": "sweet",
-   "color": "#B98559",
-   "cost": 40,
-   "unit": "15 ml",
-   "temps": [
-    "hot",
-    "cold"
-   ],
-   "families": [
-    "nutty"
-   ],
-   "allergens": [
-    "nuts"
-   ]
-  }
- ],
- "moods": [
-  "calm",
-  "nostalgic",
-  "energetic",
-  "tired",
-  "romantic",
-  "cozy",
-  "playful",
-  "stressed"
- ],
- "flavours": [
-  "chocolate",
-  "citrus",
-  "floral",
-  "nutty",
-  "earthy",
-  "fruity",
-  "spicy",
-  "herbal",
-  "caramel",
-  "tropical"
- ],
- "diets": [
-  "vegan",
-  "dairy",
-  "nuts",
-  "caffeine",
-  "sugar"
- ]
+    "caramel",
+    "tropical"
+  ],
+  "diets": [
+    "vegan",
+    "dairy",
+    "nuts",
+    "caffeine",
+    "sugar"
+  ],
+  "menu": [
+    {
+      "id": "cafe_latte",
+      "name": "Café Latte",
+      "ingredients": [
+        "espresso",
+        "milk"
+      ],
+      "temperature": "hot",
+      "moods": [
+        "calm",
+        "tired",
+        "energetic"
+      ],
+      "price": 690,
+      "steps": [
+        "Pull a double shot of espresso.",
+        "Steam the whole milk until glossy and pour over."
+      ]
+    },
+    {
+      "id": "vanilla_latte",
+      "name": "Vanilla Latte",
+      "ingredients": [
+        "espresso",
+        "vanilla",
+        "milk"
+      ],
+      "temperature": "hot",
+      "moods": [
+        "romantic",
+        "calm"
+      ],
+      "price": 750,
+      "steps": [
+        "Pull a double shot over the vanilla.",
+        "Steam the whole milk and pour slowly over the top."
+      ]
+    },
+    {
+      "id": "cardamom_honey_latte",
+      "name": "Cardamom Honey Latte",
+      "ingredients": [
+        "espresso",
+        "cardamom",
+        "honey",
+        "milk"
+      ],
+      "temperature": "hot",
+      "moods": [
+        "nostalgic",
+        "cozy"
+      ],
+      "price": 790,
+      "steps": [
+        "Bloom the cardamom with honey in the cup.",
+        "Pull a double shot over it.",
+        "Steam the whole milk and pour over."
+      ]
+    },
+    {
+      "id": "hazelnut_latte",
+      "name": "Hazelnut Latte",
+      "ingredients": [
+        "espresso",
+        "hazelnut",
+        "milk"
+      ],
+      "temperature": "hot",
+      "moods": [
+        "cozy",
+        "nostalgic"
+      ],
+      "price": 790,
+      "steps": [
+        "Pull a double shot over the hazelnut.",
+        "Steam the whole milk and pour over."
+      ]
+    },
+    {
+      "id": "mocha",
+      "name": "Mocha",
+      "ingredients": [
+        "espresso",
+        "cocoa",
+        "milk"
+      ],
+      "temperature": "hot",
+      "moods": [
+        "tired",
+        "cozy"
+      ],
+      "price": 790,
+      "steps": [
+        "Whisk the cocoa into the espresso.",
+        "Steam the whole milk and pour over."
+      ]
+    },
+    {
+      "id": "hot_chocolate",
+      "name": "Hot Chocolate",
+      "ingredients": [
+        "cocoa",
+        "milk",
+        "vanilla",
+        "cinnamon"
+      ],
+      "temperature": "hot",
+      "moods": [
+        "cozy",
+        "nostalgic",
+        "tired"
+      ],
+      "price": 750,
+      "steps": [
+        "Warm the milk with cocoa and vanilla, whisking.",
+        "Pour and finish with a dust of cinnamon."
+      ]
+    },
+    {
+      "id": "karak_chai",
+      "name": "Karak Chai",
+      "ingredients": [
+        "black_tea",
+        "cardamom",
+        "milk"
+      ],
+      "temperature": "hot",
+      "moods": [
+        "nostalgic",
+        "cozy",
+        "tired"
+      ],
+      "price": 450,
+      "steps": [
+        "Boil the black tea with crushed cardamom.",
+        "Add the milk and bring it up twice until deep and creamy.",
+        "Strain into the cup."
+      ]
+    },
+    {
+      "id": "ginger_lemon_tea",
+      "name": "Ginger Lemon Honey Tea",
+      "ingredients": [
+        "black_tea",
+        "ginger",
+        "lemon",
+        "honey"
+      ],
+      "temperature": "hot",
+      "moods": [
+        "stressed",
+        "calm",
+        "cozy"
+      ],
+      "price": 490,
+      "steps": [
+        "Steep the black tea with sliced ginger.",
+        "Stir in honey and finish with a squeeze of lemon."
+      ]
+    },
+    {
+      "id": "hibiscus_honey",
+      "name": "Hibiscus & Honey",
+      "ingredients": [
+        "hibiscus",
+        "honey",
+        "cinnamon"
+      ],
+      "temperature": "hot",
+      "moods": [
+        "calm",
+        "stressed",
+        "romantic"
+      ],
+      "price": 550,
+      "steps": [
+        "Steep the hibiscus with a cinnamon stick.",
+        "Stir in the honey."
+      ]
+    },
+    {
+      "id": "matcha_latte",
+      "name": "Matcha Latte",
+      "ingredients": [
+        "matcha",
+        "vanilla",
+        "milk"
+      ],
+      "temperature": "hot",
+      "moods": [
+        "calm",
+        "stressed"
+      ],
+      "price": 890,
+      "steps": [
+        "Whisk the matcha with a little hot water until smooth.",
+        "Add vanilla, then steamed milk."
+      ]
+    },
+    {
+      "id": "iced_caramel_latte",
+      "name": "Iced Caramel Latte",
+      "ingredients": [
+        "espresso",
+        "caramel",
+        "milk",
+        "ice"
+      ],
+      "temperature": "cold",
+      "moods": [
+        "energetic",
+        "tired",
+        "playful"
+      ],
+      "price": 790,
+      "steps": [
+        "Swirl caramel around the glass and fill with ice.",
+        "Add the cold milk, then the espresso on top."
+      ]
+    },
+    {
+      "id": "vanilla_cold_brew",
+      "name": "Vanilla Cold Brew",
+      "ingredients": [
+        "cold_brew",
+        "vanilla",
+        "milk",
+        "ice"
+      ],
+      "temperature": "cold",
+      "moods": [
+        "tired",
+        "energetic"
+      ],
+      "price": 850,
+      "steps": [
+        "Fill the glass with ice and the cold brew.",
+        "Stir in vanilla and float the milk on top."
+      ]
+    },
+    {
+      "id": "orange_cold_brew",
+      "name": "Orange Cold Brew",
+      "ingredients": [
+        "cold_brew",
+        "orange",
+        "ice"
+      ],
+      "temperature": "cold",
+      "moods": [
+        "energetic",
+        "playful"
+      ],
+      "price": 850,
+      "steps": [
+        "Fill the glass with ice and fresh orange.",
+        "Pour the cold brew over slowly."
+      ]
+    },
+    {
+      "id": "iced_chai_latte",
+      "name": "Iced Chai Latte",
+      "ingredients": [
+        "black_tea",
+        "cinnamon",
+        "cardamom",
+        "milk",
+        "ice"
+      ],
+      "temperature": "cold",
+      "moods": [
+        "cozy",
+        "nostalgic",
+        "energetic"
+      ],
+      "price": 690,
+      "steps": [
+        "Brew the black tea strong with cinnamon and cardamom, then chill.",
+        "Pour over ice and top with cold milk."
+      ]
+    },
+    {
+      "id": "iced_matcha_latte",
+      "name": "Iced Matcha Latte",
+      "ingredients": [
+        "matcha",
+        "oat_milk",
+        "honey",
+        "ice"
+      ],
+      "temperature": "cold",
+      "moods": [
+        "calm",
+        "energetic",
+        "stressed"
+      ],
+      "price": 890,
+      "steps": [
+        "Whisk the matcha with honey and a little water.",
+        "Pour over ice and cold oat milk."
+      ]
+    },
+    {
+      "id": "iced_lavender_matcha",
+      "name": "Iced Lavender Matcha",
+      "ingredients": [
+        "matcha",
+        "lavender",
+        "oat_milk",
+        "ice"
+      ],
+      "temperature": "cold",
+      "moods": [
+        "calm",
+        "romantic",
+        "stressed"
+      ],
+      "price": 950,
+      "steps": [
+        "Shake the lavender with oat milk and ice.",
+        "Whisk the matcha and layer it on top."
+      ]
+    },
+    {
+      "id": "strawberry_matcha",
+      "name": "Iced Strawberry Matcha",
+      "ingredients": [
+        "matcha",
+        "strawberry",
+        "milk",
+        "ice"
+      ],
+      "temperature": "cold",
+      "moods": [
+        "playful",
+        "romantic"
+      ],
+      "price": 950,
+      "steps": [
+        "Muddle the strawberry in the glass.",
+        "Add ice and cold milk, then layer the whisked matcha."
+      ]
+    },
+    {
+      "id": "rose_hibiscus_cooler",
+      "name": "Rose Hibiscus Cooler",
+      "ingredients": [
+        "hibiscus",
+        "rose",
+        "lemon",
+        "ice"
+      ],
+      "temperature": "cold",
+      "moods": [
+        "romantic",
+        "playful",
+        "calm"
+      ],
+      "price": 650,
+      "steps": [
+        "Chill the hibiscus tea.",
+        "Pour over ice with rose and a squeeze of lemon."
+      ]
+    },
+    {
+      "id": "lychee_rose_soda",
+      "name": "Lychee Rose Soda",
+      "ingredients": [
+        "soda",
+        "lychee",
+        "rose",
+        "ice"
+      ],
+      "temperature": "cold",
+      "moods": [
+        "romantic",
+        "playful"
+      ],
+      "price": 750,
+      "steps": [
+        "Muddle the lychee with rose in the glass.",
+        "Add ice and top with sparkling water."
+      ]
+    },
+    {
+      "id": "mint_lemonade",
+      "name": "Mint Lemonade",
+      "ingredients": [
+        "soda",
+        "lemon",
+        "mint",
+        "honey",
+        "ice"
+      ],
+      "temperature": "cold",
+      "moods": [
+        "energetic",
+        "stressed",
+        "playful"
+      ],
+      "price": 550,
+      "steps": [
+        "Muddle mint with lemon and honey.",
+        "Fill with ice and top with sparkling water."
+      ]
+    },
+    {
+      "id": "mango_coconut",
+      "name": "Mango Coconut Cooler",
+      "ingredients": [
+        "coconut_milk",
+        "mango",
+        "vanilla",
+        "ice"
+      ],
+      "temperature": "cold",
+      "moods": [
+        "playful",
+        "nostalgic"
+      ],
+      "price": 790,
+      "steps": [
+        "Blend mango with coconut milk and vanilla.",
+        "Pour over ice."
+      ]
+    }
+  ]
 }

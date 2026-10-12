@@ -7,7 +7,7 @@ import { craft as craftOnline, online } from '../lib/api';
 import { draft, creations } from '../lib/store';
 import './crafting.css';
 
-const STEPS = ['reading your mood', 'choosing from the pantry', 'balancing it', 'writing your lines'];
+const STEPS = ['reading your mood', 'choosing from the menu', 'checking what you avoid', 'writing your lines'];
 
 export default function Crafting() {
   const navigate = useNavigate();

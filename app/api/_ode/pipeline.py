@@ -2,8 +2,10 @@
 How an ode is made, in three stages:
 
   1. read the mood     the model reads what the person wrote; their own taps always win
-  2. build the recipe  code narrows the pantry to what is allowed, the model chooses from that
-                       list only, and code checks the result before anyone sees it
+  2. build the recipe  in approved mode (the default) the drink is one of the café's own
+                       approved recipes: code ranks the ones that can be served for this guest
+                       and the model may only pick among the best few. In open mode code
+                       narrows the pantry and the model composes from that list only.
   3. write the lines   a name and two lines, checked for length and voice
 
 Each model answer is checked. A rejected answer goes back once more with the reasons; if it
@@ -18,7 +20,7 @@ from typing import List, Literal, Optional
 
 from pydantic import BaseModel, create_model
 
-from . import rules
+from . import house, rules
 from .llm import ModelError, model
 from .pantry import FLAVOURS, MOODS, allowed, method_for, prep_seconds, price_of
 
@@ -66,6 +68,11 @@ pantry list given. Rules:
 - build around the mood: a few ingredients that belong together, not everything that matches
 - steps: 2 to 6 short imperative steps a barista can follow at speed. Mention only ingredients
   in this drink. Never state amounts or measurements; portions are printed beside each ingredient.
+"""
+
+HOUSE_PROMPT = VOICE + """
+You are the head barista. From the café's own menu below, choose the one drink that best fits
+this person's mood and words. Answer with its id only. The list is already safe for them.
 """
 
 LINES_PROMPT = VOICE + """
@@ -176,7 +183,11 @@ def merge_mood(read, inp, fallback):
     }
 
 
-def make(cafe, pantry, out, inp, seed, use_model=True, on_stage=lambda n: None):
+def house_schema(ids):
+    return create_model("HousePick", choice=(Literal[tuple(ids)], ...))
+
+
+def make(cafe, pantry, out, inp, seed, use_model=True, on_stage=lambda n: None, recipes=None, mode="open"):
     started = time.monotonic()
     live = lambda: use_model and time.monotonic() - started < BUDGET
     source = {}
@@ -190,7 +201,25 @@ def make(cafe, pantry, out, inp, seed, use_model=True, on_stage=lambda n: None):
     source["mood"] = "model" if read else "rules"
     on_stage(1)
 
-    # 2. recipe: the model chooses, but only from what the rules allow
+    # 2. recipe
+    if mode == "approved":
+        rows = house.choose(recipes or [], pantry, mood, out, seed, bool(inp.get("temp")))
+        top = rows[:5]
+        pick = None
+        if live() and len(top) > 1:
+            options = [{"id": r["id"], "name": r["name"], "moods": r.get("moods"), "ingredients": [i["name"] for i in m["ingredients"]]} for _, r, m in top]
+            msg = f"Mood: {json.dumps(mood)}\nCustomer wrote: {json.dumps(text)}\nMenu: {json.dumps(options)}"
+            pick = ask(HOUSE_PROMPT, msg, house_schema([r["id"] for _, r, _ in top]), lambda r: ([], r.choice), 60)
+        _, r, made = next((row for row in top if row[1]["id"] == pick), top[0])
+        source["recipe"] = "model" if pick else "rules"
+        mood["temperature"] = r["temperature"]
+        recipe = house.recipe_for(r, made, mood)
+        ingredients = recipe["ingredients"]
+        price = house.price_for(cafe, r, made)
+        on_stage(2)
+        return finish(cafe, inp, mood, recipe, ingredients, price, text, seed, live, source, on_stage)
+
+    # open mode: the model composes, but only from what the rules allow
     ok = allowed(pantry, mood["temperature"], mood["diet"], out)
     chosen = None
     if live() and len(ok) >= 2:
@@ -217,6 +246,10 @@ def make(cafe, pantry, out, inp, seed, use_model=True, on_stage=lambda n: None):
         "prepSeconds": prep_seconds(ingredients),
     }
     on_stage(2)
+    return finish(cafe, inp, mood, recipe, ingredients, price_of(cafe, ingredients), text, seed, live, source, on_stage)
+
+
+def finish(cafe, inp, mood, recipe, ingredients, price, text, seed, live, source, on_stage):
 
     # 3. name and lines; a customer message that moderation flags is not echoed back
     m = model()
@@ -233,5 +266,5 @@ def make(cafe, pantry, out, inp, seed, use_model=True, on_stage=lambda n: None):
     on_stage(4)
     return {
         "cafe": cafe["id"], "input": inp, "mood": mood, "recipe": recipe, **ode,
-        "price": price_of(cafe, ingredients), "match": match, "source": source,
+        "price": price, "match": match, "source": source,
     }

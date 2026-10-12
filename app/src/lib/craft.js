@@ -3,7 +3,7 @@
  * recipe from the café's pantry, write the two lines) with hand-written rules, so the whole
  * flow works before the backend and the AI are connected. Same input, same drink.
  */
-import { cafe, pantry } from '../data/demoCafe';
+import { cafe, pantry, houseMenu } from '../data/demoCafe';
 import { stock } from './store';
 
 function seeded(str) {
@@ -109,6 +109,56 @@ export function buildRecipe(mood, seed, outList) {
   return { ingredients, method, temperature: mood.temperature, steps, prepSeconds: 90 + ingredients.length * 25 };
 }
 
+// The café's approved menu: same rules as the server (api/_ode/house.py). The drink is always
+// one the café approved; ode only chooses which, and swaps in oat milk for dairy-free guests.
+const MILK_SWAP = ['oat_milk', 'coconut_milk'];
+const byId = Object.fromEntries(pantry.map((i) => [i.id, i]));
+
+function resolveHouse(d, mood, outList) {
+  const ok = new Set(allowedPantry({ ...mood, temperature: d.temperature }, outList).map((i) => i.id));
+  const ingredients = [], swaps = [];
+  for (const id of d.ingredients) {
+    const it = byId[id];
+    if (!it) return null;
+    if (ok.has(id)) { ingredients.push(it); continue; }
+    const alt = it.category === 'milk' ? MILK_SWAP.find((m) => m !== id && ok.has(m)) : null;
+    if (!alt) return null;
+    ingredients.push(byId[alt]);
+    swaps.push({ from: it.name, to: byId[alt].name });
+  }
+  return { ingredients, swaps };
+}
+
+export function serveHouse(mood, seed, outList = stock.out(), tempChosen = false) {
+  const r = seeded(seed + 'house');
+  const rank = (strict) => houseMenu
+    .filter((d) => !strict || d.temperature === mood.temperature)
+    .map((d) => {
+      const made = resolveHouse(d, mood, outList);
+      if (!made) return null;
+      const fams = new Set(made.ingredients.flatMap((i) => i.families));
+      const sweet = made.ingredients.some((i) => i.category === 'sweet');
+      let s = 0;
+      if (d.moods.includes(mood.primary)) s += 3;
+      if (mood.secondary && d.moods.includes(mood.secondary)) s += 1.5;
+      s += mood.families.filter((f) => fams.has(f)).length + 2 * (mood.asked || []).filter((f) => fams.has(f)).length;
+      if (mood.sweetness >= 7 && sweet) s += 0.5;
+      if (mood.sweetness <= 2 && sweet) s -= 1;
+      return { d, made, s: s + r() * 0.8 };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.s - a.s);
+  let rows = rank(true);
+  if (!rows.length && !tempChosen) rows = rank(false);
+  if (!rows.length) return null;
+  const { d, made } = rows[0];
+  const ing = made.ingredients, t = d.temperature;
+  const method = t === 'hot' ? (ing.some((i) => i.category === 'milk') ? 'steam' : 'hot brew')
+    : ing.some((i) => i.category === 'fruit') ? 'muddle' : ing.some((i) => i.category === 'fizz') ? 'layer' : 'shake';
+  const steps = [...(d.steps?.length ? d.steps : recipeSteps(ing, method, t)), ...made.swaps.map((sw) => `Made with ${sw.to.toLowerCase()} instead of ${sw.from.toLowerCase()} for this guest.`)];
+  return { ingredients: ing, method, temperature: t, steps, prepSeconds: 90 + ing.length * 25, house: { id: d.id, name: d.name }, swaps: made.swaps, price: d.price };
+}
+
 function recipeSteps(ing, method, temp) {
   const names = (cat) => ing.filter((i) => cat.includes(i.category)).map((i) => i.name.toLowerCase());
   const s = [];
@@ -152,6 +202,7 @@ export function writeOde(mood, recipe, seed) {
 }
 
 export function priceOf(recipe) {
+  if (recipe.price) return recipe.price; // a house drink has the café's own price
   const cost = recipe.ingredients.reduce((s, i) => s + i.cost, 0);
   const raw = Math.min(cafe.maxPrice, Math.max(cafe.minPrice, cost * cafe.margin));
   return Math.ceil(raw / 50) * 50 - 10; // 590, 640, 690: café-style prices
@@ -165,7 +216,8 @@ export async function craft(input, onStage = () => {}) {
   await wait(700);
   const mood = readMood(input); onStage(1);
   await wait(800);
-  const recipe = buildRecipe(mood, seed); onStage(2);
+  const recipe = serveHouse(mood, seed, undefined, !!input.temp) || buildRecipe(mood, seed);
+  mood.temperature = recipe.temperature; onStage(2);
   await wait(700);
   const ode = writeOde(mood, recipe, seed); onStage(3);
   await wait(600);

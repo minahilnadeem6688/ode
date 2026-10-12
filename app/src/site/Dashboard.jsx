@@ -7,11 +7,12 @@ import { api } from '../lib/api';
 import { session, useSession } from '../lib/session';
 import { MENU } from '../lib/paths';
 import { TableCard } from './CafeTools';
+import MenuTab from './MenuTab';
 import { byId } from './odes';
 import './dashboard.css';
 import './cafes.css';
 
-const TABS = [['overview', 'Overview'], ['pantry', 'Pantry'], ['cards', 'Table cards'], ['pilots', 'Pilot requests']];
+const TABS = [['overview', 'Overview'], ['menu', 'Menu'], ['pantry', 'Pantry'], ['cards', 'Table cards'], ['pilots', 'Pilot requests']];
 const pkr = (n) => 'Rs ' + Number(n || 0).toLocaleString('en-PK');
 const byName = Object.fromEntries(pantry.map((i) => [i.name, i]));
 const ago = (t) => new Date(t).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -163,6 +164,7 @@ export default function Dashboard() {
           <span className="pill">{team.admin ? 'owner' : 'café team'}</span>
         </header>
         {tab === 'overview' && <Overview />}
+        {tab === 'menu' && <MenuTab />}
         {tab === 'pantry' && <Pantry />}
         {tab === 'cards' && <TableCard />}
         {tab === 'pilots' && team.admin && <Pilots />}

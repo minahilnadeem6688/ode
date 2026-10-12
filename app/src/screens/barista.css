@@ -29,6 +29,9 @@
 .ticket__code { font: 400 40px/1 var(--serif); font-variation-settings: 'SOFT' 100; letter-spacing: -.03em; }
 .ticket__head span { color: var(--moss); font-size: 13px; }
 .ticket__name { margin: 6px 0 2px; font: 400 22px var(--serif); font-variation-settings: 'SOFT' 100; }
+.ticket__house { margin: 2px 0 4px; font-size: 13.5px; color: var(--moss-deep); }
+.ticket__house b { color: var(--roast); font-weight: 600; }
+.ticket__swap { margin: 8px 0 0; padding: 7px 10px; border-radius: 12px; background: var(--honey-pale); color: var(--honey-deep); font: 600 13.5px var(--sans); }
 .ticket__meta { margin: 0; color: var(--moss-deep); font-size: 13.5px; }
 .ticket__flags { display: flex; align-items: center; gap: 6px; margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; background: #FBE3DD; color: #A4372A; font: 600 13.5px var(--sans); }
 .ticket__ings { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 6px; }

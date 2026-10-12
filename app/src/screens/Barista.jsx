@@ -138,8 +138,10 @@ export default function Barista() {
                   <article key={o.id || o.code} className="ticket">
                     <div className="ticket__head"><b className="ticket__code">{o.code}</b><span>{ago(o.placedAt)}</span></div>
                     <h3 className="ticket__name">{c.name}</h3>
+                    {c.recipe.house && <p className="ticket__house">House menu: <b>{c.recipe.house.name || c.recipe.house}</b></p>}
                     <p className="ticket__meta">{o.size} · {c.recipe.temperature} · {c.recipe.method} · ~{Math.round(c.recipe.prepSeconds / 60 * 10) / 10} min</p>
                     {flags.length > 0 && <p className="ticket__flags"><Icon name="alert" size={16} /> {flags.join(' · ')}</p>}
+                    {(c.recipe.swaps || []).map((sw) => <p key={sw.to} className="ticket__swap">{sw.to} instead of {sw.from.toLowerCase()}</p>)}
                     <ul className="ticket__ings">
                       {c.recipe.ingredients.map((i) => <li key={i.id}><Painted item={i} size={26} /><span>{i.name}</span><small>{i.unit}{o.size === 'large' && i.category !== 'finish' ? ' ×1.5' : ''}</small></li>)}
                     </ul>

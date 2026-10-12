@@ -13,6 +13,13 @@ ode API. Served by Vercel next to the app, so every route lives under /api.
   PATCH /api/cafes/{cafe}/orders/{id}      staff     move an order along
   PUT   /api/cafes/{cafe}/stock/{item}     staff     mark an ingredient in or out
   GET   /api/cafes/{cafe}/stats            staff     the dashboard: orders, ratings, what people feel
+  GET   /api/cafes/{cafe}/menu             staff     the café's drinks, mode, coverage and suggestions
+  PUT   /api/cafes/{cafe}/menu/mode        staff     approved (serve only approved drinks) or open
+  POST  /api/cafes/{cafe}/menu/recipes     staff     add a drink (approved straight away)
+  PATCH /api/cafes/{cafe}/menu/recipes/{id} staff    edit, approve, switch off
+  DELETE /api/cafes/{cafe}/menu/recipes/{id} staff   remove
+  POST  /api/cafes/{cafe}/menu/suggest     staff     ode suggests new drinks from the pantry
+  POST  /api/cafes/{cafe}/menu/preview     staff     which drink a guest with this mood would get
   GET   /api/leads                         admin     cafés that asked for a pilot
 
   POST  /api/auth/signup                             customer account: name, email, password
@@ -40,7 +47,7 @@ from fastapi import FastAPI, Header, HTTPException, Request  # noqa: E402
 from fastapi.responses import StreamingResponse  # noqa: E402
 from pydantic import BaseModel, Field  # noqa: E402
 
-from _ode import auth, pipeline  # noqa: E402
+from _ode import auth, house, pipeline, rules  # noqa: E402
 from _ode.llm import model  # noqa: E402
 from _ode.pantry import DIETS, FLAVOURS, MOODS, SIZES, customer_view, get_cafe  # noqa: E402
 from _ode.store import new_id, store  # noqa: E402
@@ -99,9 +106,36 @@ class LoginIn(BaseModel):
     password: str = Field(max_length=200)
 
 
+class RecipeIn(BaseModel):
+    name: str = Field(min_length=2, max_length=40)
+    ingredients: List[str] = Field(min_length=1, max_length=6)
+    temperature: Literal["hot", "cold", "room"]
+    moods: List[Literal[tuple(MOODS)]] = Field(default_factory=list, max_length=4)
+    price: Optional[int] = Field(None, ge=100, le=10000)
+    steps: List[str] = Field(default_factory=list, max_length=6)
+
+
+class RecipePatch(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=40)
+    ingredients: Optional[List[str]] = Field(None, min_length=1, max_length=6)
+    temperature: Optional[Literal["hot", "cold", "room"]] = None
+    moods: Optional[List[Literal[tuple(MOODS)]]] = Field(None, max_length=4)
+    price: Optional[int] = Field(None, ge=0, le=10000)  # 0 goes back to the automatic price
+    steps: Optional[List[str]] = Field(None, max_length=6)
+    status: Optional[Literal["approved", "suggested", "off"]] = None
+
+
+class ModeIn(BaseModel):
+    mode: Literal["approved", "open"]
+
+
 class TeamIn(BaseModel):
     cafe: str = Field(max_length=40)
     key: str = Field(max_length=200)
+
+
+def cafe_mode(c, cafe_id):
+    return store().get_mode(cafe_id) or c["cafe"].get("mode", "open")
 
 
 def cafe_or_404(cafe_id):
@@ -196,6 +230,8 @@ def craft(cafe_id: str, body: CraftIn, request: Request):
     s = store()
     inp = body.model_dump()
     use_model = s.crafts_today(cafe_id) < DAILY_MODEL_LIMIT
+    mode = cafe_mode(c, cafe_id)
+    recipes = house.menu(s, cafe_id) if mode == "approved" else None
     out = s.stock_out(cafe_id)
     seed = json.dumps(inp, sort_keys=True) + str(int(time.time() // 60))  # same words, same minute, same drink
 
@@ -203,10 +239,12 @@ def craft(cafe_id: str, body: CraftIn, request: Request):
 
     def work():
         try:
-            creation = pipeline.make(c["cafe"], c["pantry"], out, inp, seed, use_model, lambda n: q.put({"stage": n}))
+            creation = pipeline.make(c["cafe"], c["pantry"], out, inp, seed, use_model, lambda n: q.put({"stage": n}), recipes, mode)
             creation = {"id": new_id(), "createdAt": int(time.time() * 1000), **creation}
             s.save_creation(creation)
             q.put({"creation": customer_view(creation)})
+        except house.NothingFits:
+            q.put({"error": "nothing on today's menu fits those choices. try loosening one, or ask at the counter"})
         except Exception:
             q.put({"error": "could not write this one. try again"})
 
@@ -303,6 +341,141 @@ def stats(cafe_id: str, x_ode_staff: Optional[str] = Header(None), authorization
     cafe_or_404(cafe_id)
     staff(cafe_id, x_ode_staff, authorization)
     return store().stats(cafe_id)
+
+
+# The café's menu ------------------------------------------------------------------------------
+
+def check_recipe_in(c, ingredients, temperature, steps):
+    by_id = {i["id"]: i for i in c["pantry"]}
+    if len(set(ingredients)) != len(ingredients):
+        raise HTTPException(422, "an ingredient is listed twice")
+    for iid in ingredients:
+        if iid not in by_id:
+            raise HTTPException(422, f"{iid} is not in your pantry")
+        if temperature not in by_id[iid]["temps"]:
+            raise HTTPException(422, f"{by_id[iid]['name']} cannot be served {'iced' if temperature == 'cold' else temperature}")
+    if any(len(x) > 160 for x in steps or []):
+        raise HTTPException(422, "keep each step under 160 characters")
+
+
+def menu_view(c, cafe_id):
+    s = store()
+    recipes, out = house.menu(s, cafe_id), s.stock_out(cafe_id)
+    return {
+        "mode": cafe_mode(c, cafe_id),
+        "recipes": [house.view(c["cafe"], r, c["pantry"], out) for r in recipes],
+        "coverage": house.coverage(recipes, c["pantry"], out),
+        "moods": MOODS,
+    }
+
+
+@app.get("/api/cafes/{cafe_id}/menu")
+def get_menu(cafe_id: str, x_ode_staff: Optional[str] = Header(None), authorization: Optional[str] = Header(None)):
+    c = cafe_or_404(cafe_id)
+    staff(cafe_id, x_ode_staff, authorization)
+    return menu_view(c, cafe_id)
+
+
+@app.put("/api/cafes/{cafe_id}/menu/mode")
+def set_mode(cafe_id: str, body: ModeIn, x_ode_staff: Optional[str] = Header(None), authorization: Optional[str] = Header(None)):
+    c = cafe_or_404(cafe_id)
+    staff(cafe_id, x_ode_staff, authorization)
+    if body.mode == "approved" and not any(r["status"] == "approved" for r in house.menu(store(), cafe_id)):
+        raise HTTPException(422, "approve at least one drink first")
+    store().set_mode(cafe_id, body.mode)
+    return menu_view(c, cafe_id)
+
+
+@app.post("/api/cafes/{cafe_id}/menu/recipes")
+def add_recipe(cafe_id: str, body: RecipeIn, x_ode_staff: Optional[str] = Header(None), authorization: Optional[str] = Header(None)):
+    c = cafe_or_404(cafe_id)
+    staff(cafe_id, x_ode_staff, authorization)
+    check_recipe_in(c, body.ingredients, body.temperature, body.steps)
+    r = body.model_dump()
+    r["name"] = r["name"].strip()
+    r["moods"] = r["moods"] or house.auto_moods(body.ingredients, body.temperature, c["pantry"])
+    r["steps"] = [x.strip() for x in r["steps"] if x.strip()]
+    house.menu(store(), cafe_id)  # plant the starter menu first, so this drink is added to it
+    saved = store().add_recipe(cafe_id, {**r, "status": "approved", "source": "house"})
+    return house.view(c["cafe"], saved, c["pantry"], store().stock_out(cafe_id))
+
+
+@app.patch("/api/cafes/{cafe_id}/menu/recipes/{rid}")
+def edit_recipe(cafe_id: str, rid: str, body: RecipePatch, x_ode_staff: Optional[str] = Header(None), authorization: Optional[str] = Header(None)):
+    c = cafe_or_404(cafe_id)
+    staff(cafe_id, x_ode_staff, authorization)
+    s = store()
+    cur = next((r for r in house.menu(s, cafe_id) if r["id"] == rid), None)
+    if not cur:
+        raise HTTPException(404, "that drink is not on your menu")
+    fields = body.model_dump(exclude_none=True)
+    if "price" in fields and fields["price"] == 0:
+        fields["price"] = None
+    check_recipe_in(c, fields.get("ingredients", cur["ingredients"]), fields.get("temperature", cur["temperature"]), fields.get("steps"))
+    if fields.get("status") == "approved":
+        fields["why"] = None
+    if cur["status"] == "approved" and fields.get("status") in ("off", "suggested") and cafe_mode(c, cafe_id) == "approved":
+        left = [r for r in house.menu(s, cafe_id) if r["status"] == "approved" and r["id"] != rid]
+        if not left:
+            raise HTTPException(422, "this is the last approved drink. approve another one first")
+    r = s.update_recipe(cafe_id, rid, fields)
+    return house.view(c["cafe"], r, c["pantry"], s.stock_out(cafe_id))
+
+
+@app.delete("/api/cafes/{cafe_id}/menu/recipes/{rid}")
+def remove_recipe(cafe_id: str, rid: str, x_ode_staff: Optional[str] = Header(None), authorization: Optional[str] = Header(None)):
+    c = cafe_or_404(cafe_id)
+    staff(cafe_id, x_ode_staff, authorization)
+    s = store()
+    menu = house.menu(s, cafe_id)
+    cur = next((r for r in menu if r["id"] == rid), None)
+    if not cur:
+        raise HTTPException(404, "that drink is not on your menu")
+    if cur["status"] == "approved" and cafe_mode(c, cafe_id) == "approved" and sum(r["status"] == "approved" for r in menu) == 1:
+        raise HTTPException(422, "this is the last approved drink. approve another one first")
+    s.delete_recipe(cafe_id, rid)
+    return {"ok": True}
+
+
+@app.post("/api/cafes/{cafe_id}/menu/suggest")
+def suggest(cafe_id: str, x_ode_staff: Optional[str] = Header(None), authorization: Optional[str] = Header(None)):
+    c = cafe_or_404(cafe_id)
+    staff(cafe_id, x_ode_staff, authorization)
+    s = store()
+    menu = house.menu(s, cafe_id)
+    # earlier suggestions the owner did not act on make way for fresh ones
+    for r in menu:
+        if r["status"] == "suggested":
+            s.delete_recipe(cafe_id, r["id"])
+    kept = [r for r in menu if r["status"] != "suggested"]
+    for r in house.suggest(c["cafe"], c["pantry"], kept, s.stock_out(cafe_id), seed=str(time.time())):
+        s.add_recipe(cafe_id, r)
+    return menu_view(c, cafe_id)
+
+
+@app.post("/api/cafes/{cafe_id}/menu/preview")
+def preview(cafe_id: str, body: CraftIn, x_ode_staff: Optional[str] = Header(None), authorization: Optional[str] = Header(None)):
+    """The drinks a guest with this mood would get, best first, without making anything."""
+    c = cafe_or_404(cafe_id)
+    staff(cafe_id, x_ode_staff, authorization)
+    s = store()
+    inp = body.model_dump()
+    mood = rules.read_mood(inp)
+    out = s.stock_out(cafe_id)
+    try:
+        rows = house.choose(house.menu(s, cafe_id), c["pantry"], mood, out, json.dumps(inp, sort_keys=True), bool(inp.get("temp")))
+    except house.NothingFits:
+        return {"mood": mood, "picks": []}
+    picks = []
+    for sc, r, made in rows[:3]:
+        fams = {f for i in made["ingredients"] for f in i["families"]}
+        picks.append({
+            "id": r["id"], "name": r["name"], "temperature": r["temperature"],
+            "price": house.price_for(c["cafe"], r, made), "swaps": made["swaps"],
+            "because": [x for x in [f"suits {mood['primary']}" if mood["primary"] in (r.get("moods") or []) else None,
+                                    *[f"{f}" for f in mood["families"] if f in fams]] if x][:3],
+        })
+    return {"mood": mood, "picks": picks}
 
 
 @app.get("/api/leads")

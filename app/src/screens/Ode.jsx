@@ -7,6 +7,7 @@ import Icon from '../components/Icon';
 import { creations, orders } from '../lib/store';
 import { api } from '../lib/api';
 import { session } from '../lib/session';
+import { cafe } from '../data/demoCafe';
 import './ode.css';
 
 const SIZES = [['regular', 'regular', 0], ['large', 'large', 150]];
@@ -64,6 +65,7 @@ export default function Ode() {
       <p className="eyebrow ode__label rise" style={{ '--d': '.15s' }}>your ode</p>
       <h1 className="display ode__name rise" style={{ '--d': '.22s' }}>{c.name}</h1>
       <p className="poem ode__poem rise" style={{ '--d': '.3s' }}>{c.lines[0]}<br />{c.lines[1]}</p>
+      {c.recipe.house && <p className="ode__house rise" style={{ '--d': '.34s' }}>{c.recipe.house.name || c.recipe.house} · from {cafe.name}’s menu</p>}
 
       <div className="ode__match rise" style={{ '--d': '.38s' }}>
         <span className="ode__ring" style={{ '--p': c.match + '%' }}><b>{c.match}%</b></span>

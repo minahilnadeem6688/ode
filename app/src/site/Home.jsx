@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Painted } from '../components/Brand';
 import { Cup } from '../components/Three';
-import { readMood, buildRecipe, writeOde, priceOf } from '../lib/craft';
+import { readMood, buildRecipe, serveHouse, writeOde, priceOf } from '../lib/craft';
 import { HERO, WALL } from './odes';
 import { STILLS } from './stills';
 import Film from './Film';
@@ -27,7 +27,8 @@ const COUNTER = [
 function write(text) {
   const mood = readMood({ text });
   const seed = text + 'site';
-  const recipe = buildRecipe(mood, seed);
+  const recipe = serveHouse(mood, seed, []) || buildRecipe(mood, seed, []);
+  mood.temperature = recipe.temperature;
   return { id: 'try-' + seed, ...writeOde(mood, recipe, seed), mood, recipe, price: priceOf(recipe) };
 }
 
@@ -62,6 +63,7 @@ function TryIt() {
           <small>{moodWord}</small>
           <b>{drink.name}</b>
           <i>{drink.lines[0]}<br />{drink.lines[1]}</i>
+          {drink.recipe.house && <span className="try__house">{drink.recipe.house.name}, from the café’s own menu</span>}
           <span className="try__foot">
             <span className="try__ings">
               {drink.recipe.ingredients.map((x, k) => <span key={x.id} style={{ '--k': k }} title={x.name}><Painted item={x} size={26} /></span>)}

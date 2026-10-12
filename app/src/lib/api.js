@@ -63,6 +63,13 @@ export const api = {
   advance: (staff, id, status) => call(`/cafes/${CAFE}/orders/${id}`, { method: 'PATCH', body: { status }, staff, as: 'team' }),
   stock: (staff, item, out) => call(`/cafes/${CAFE}/stock/${item}`, { method: 'PUT', body: { out }, staff, as: 'team' }),
   stats: () => call(`/cafes/${CAFE}/stats`, { as: 'team' }),
+  menu: () => call(`/cafes/${CAFE}/menu`, { as: 'team' }),
+  menuMode: (mode) => call(`/cafes/${CAFE}/menu/mode`, { method: 'PUT', body: { mode }, as: 'team' }),
+  addRecipe: (r) => call(`/cafes/${CAFE}/menu/recipes`, { method: 'POST', body: r, as: 'team' }),
+  editRecipe: (id, r) => call(`/cafes/${CAFE}/menu/recipes/${id}`, { method: 'PATCH', body: r, as: 'team' }),
+  removeRecipe: (id) => call(`/cafes/${CAFE}/menu/recipes/${id}`, { method: 'DELETE', as: 'team' }),
+  suggest: () => call(`/cafes/${CAFE}/menu/suggest`, { method: 'POST', as: 'team' }),
+  preview: (input) => call(`/cafes/${CAFE}/menu/preview`, { method: 'POST', body: input, as: 'team' }),
   leads: () => call('/leads', { as: 'team' }),
   team: (cafe, key) => call('/auth/team', { method: 'POST', body: { cafe, key } }),
 

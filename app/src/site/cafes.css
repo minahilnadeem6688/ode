@@ -82,3 +82,26 @@ html { scroll-behavior: smooth; scroll-padding-top: 90px; }
 .feat dd { margin: 6px 0 0; color: var(--moss-deep); line-height: 1.6; font-size: 15.5px; max-width: 40ch; }
 .feats__soon { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 26px 0 0; color: var(--moss-deep); font-size: 15px; }
 @media (min-width: 760px) { .feats { grid-template-columns: repeat(3, 1fr); } }
+
+/* Your menu, in miniature */
+.mdemo { display: grid; gap: 14px; margin-top: 36px; }
+@media (min-width: 900px) { .mdemo { grid-template-columns: 1.4fr 1fr; align-items: start; } }
+.mdemo__card { display: grid; gap: 12px; padding: 24px; }
+.mdemo__label { font: 600 11.5px var(--sans); letter-spacing: .16em; text-transform: uppercase; color: var(--moss); }
+.mdemo__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.mdemo__chips button { border: 0; border-radius: 999px; padding: 9px 14px; background: var(--oyster); font: 500 14px var(--sans); color: var(--moss-deep); transition: background .2s, color .2s; }
+.mdemo__chips button[aria-pressed='true'] { background: var(--roast); color: var(--cream); }
+.mdemo__result { display: grid; gap: 4px; margin-top: 6px; padding: 20px 22px; border-radius: 18px; background: var(--roast-2); color: var(--cream); animation: pageIn .5s var(--ease) both; }
+.mdemo__result .mdemo__label { color: var(--rain); }
+.mdemo__result b { font: 400 34px/1.1 var(--serif); font-variation-settings: 'SOFT' 100; letter-spacing: -.01em; }
+.mdemo__result span { color: var(--rain); font-size: 14px; }
+.mdemo__result i { margin-top: 6px; font: 300 italic 17px var(--serif); color: var(--honey); }
+.mdemo__sugg { box-shadow: inset 0 0 0 1.5px var(--honey), var(--shadow-card); }
+.mdemo__sugg b { font: 400 24px/1.2 var(--serif); font-variation-settings: 'SOFT' 100; }
+.mdemo__why { margin-top: -6px; font: 600 13.5px var(--sans); color: var(--honey-deep); }
+.mdemo__ings { display: flex; flex-wrap: wrap; gap: 6px; }
+.mdemo__ings > span { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 5px; border-radius: 999px; background: var(--oyster); font-size: 13px; }
+.mdemo__btns { display: flex; gap: 8px; }
+.mdemo__btns .btn { padding: 11px 18px; font-size: 14.5px; }
+.mdemo__done { margin: 0; font-size: 14.5px; color: var(--moss-deep); line-height: 1.5; }
+.mdemo__done button { border: 0; background: none; padding: 0 0 0 4px; font: 600 14px var(--sans); color: var(--roast); text-decoration: underline; }

@@ -11,6 +11,8 @@ import data from '../../api/_ode/demo_cafe.json';
 
 export const cafe = data.cafe;
 export const pantry = data.pantry;
+// The café's own approved drinks. In approved mode every ode is one of these.
+export const houseMenu = data.menu || [];
 export const MOODS = data.moods;
 export const FLAVOURS = data.flavours;
 export const DIETS = [

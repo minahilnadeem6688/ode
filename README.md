@@ -13,15 +13,15 @@ A mood menu for cafés. A customer scans a QR code, says how they feel, and gets
 | `design/` | Brand boards and the brand's generators: the quotation-drop mark, flavour portraits, painted ingredients |
 
 ### Website
-- **`/`**: the live hero (type a feeling and a drink is written on the spot, the 3D cup changes with it), why cafés choose ode, the shelf
+- **`/`**: a scroll-driven opening scene (a bean falls, the grounds swirl into the cup and a latte forms), three steps, a live try-it with the 3D cup, the order board and the Wall
 - **`/how-it-works`**: six steps beside a live phone running the real menu, and how ode keeps the rules strict
-- **`/for-cafes`**: a live order board, a pantry you can switch out of stock, a price calculator and a table card designer with a working QR code
+- **`/for-cafes`**: the café's own menu matched to a guest's mood, a live order board, a pantry you can switch out of stock, a price calculator and a table card designer with a working QR code
 - **`/wall`**: a Pinterest-style wall of odes, filterable by mood, each opening into its ingredients and price
-- **`/pricing`**: the free pilot and the monthly plan
+- **`/pricing`**: a free 30-day pilot, the founding-café plan, the standard plan and multi-branch
 - **`/get-ode`**: the pilot request form (saved to the `leads` table)
 - **`/login`**: two separate doors: customers (sign in or create an account) and the café team (café ID and key)
 - **`/account`**: a customer's saved odes, order history and taste
-- **`/dashboard`**: the café team's overview (orders, sales, ratings, moods, busiest ingredients), pantry, table cards and pilot requests
+- **`/dashboard`**: the café team's overview (orders, sales, ratings, moods, busiest ingredients), menu, pantry, table cards and pilot requests
 
 The Wall's photos are rendered by a small 3D studio (`src/three/still.js`) at `/kit/stills` and saved to `public/wall/`.
 
@@ -36,16 +36,17 @@ The Wall's photos are rendered by a small 3D studio (`src/three/still.js`) at `/
 ### Café
 - **Barista board** (`/barista`): new → making → ready, ingredients with amounts, method and steps, a chime for new orders
 - **Pantry**: switch ingredients out of stock; new drinks stop using them immediately
+- **Menu** (dashboard): the café's own drinks with their recipes and prices. In approved mode, the default, every guest gets one of these. Owners add and edit drinks, switch them off, see which moods have no warm or iced drink yet, approve or dismiss drinks ode suggests from the pantry, and preview which drink a guest with a given mood would get
 
 ## How an ode is written
 
 Three stages, each one checked before anyone sees it:
 
 1. **Read the mood.** The model reads what the customer wrote. Their own taps (mood, temperature, flavours) always win over its reading.
-2. **Build the recipe.** Code first narrows the pantry to what this café has in stock, at this temperature, and what is safe for this person. The model can only choose from that list. Code then checks the drink: one base, at most one milk, no milk with sparkling water, every flavour they asked for included, steps that mention only what is in the cup and no amounts.
+2. **Choose the drink.** In approved mode (the default) the drink is one of the café's own approved recipes. Code keeps only the ones that can be made right now (in stock, at this temperature, safe for this person; milk becomes oat milk for dairy-free guests) and ranks them by mood and flavour. The model may only pick among the best few, by id. In open mode the café lets ode compose: code narrows the pantry to what is allowed and the model chooses from that list only, then code checks the drink (one base, at most one milk, no milk with sparkling water, every flavour asked for, steps that mention only what is in the cup and no amounts).
 3. **Write the lines.** A name and two lines, checked for length and voice: lowercase, no dashes, emoji or cliches. Words that moderation flags are never echoed back.
 
-A rejected answer goes back once with the reasons. If it fails again, or the model is slow or missing, that stage falls back to the rules engine. The customer always gets a drink. Portions come from the café's pantry and the price from its costs and margin, never from the model, and the customer's phone sees ingredient names only.
+A rejected answer goes back once with the reasons. If it fails again, or the model is slow or missing, that stage falls back to the rules engine. Recipes, portions and prices are always the café's, never the model's, and the customer's phone sees ingredient names only. If nothing on the menu can be served for a guest (for example everything iced needs ice and ice is out), they are told kindly instead of being given something the café never approved.
 
 ## Run it
 
@@ -90,4 +91,4 @@ Environment variables, set in Vercel only:
 
 ## Status
 
-The customer flow, the barista board, the pantry and the API are in. Next: accounts (Google and email), the owner dashboard (setup, pricing, insights, QR table cards) and the café wall.
+In: the customer flow, accounts, the barista board, the owner dashboard (overview, menu approval, pantry, table cards) and the API. Next: menu import from a photo, specials from much-loved odes, and the café wall.

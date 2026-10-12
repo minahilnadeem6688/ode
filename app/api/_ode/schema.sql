@@ -61,3 +61,20 @@ create table if not exists saves (
 
 alter table orders add column if not exists user_id text references users (id) on delete set null;
 create index if not exists orders_user on orders (user_id, placed_at desc);
+
+-- The café's menu: approved drinks, ode's suggestions and drinks switched off
+create table if not exists cafe_settings (
+  cafe_id  text primary key,
+  mode     text check (mode in ('approved', 'open')),
+  seeded   boolean not null default false
+);
+
+create table if not exists recipes (
+  id          text not null,
+  cafe_id     text not null,
+  data        jsonb not null,
+  status      text not null default 'approved' check (status in ('approved', 'suggested', 'off')),
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now(),
+  primary key (cafe_id, id)
+);

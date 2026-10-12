@@ -69,5 +69,7 @@ def customer_view(creation):
             "ingredients": [{k: i[k] for k in ("id", "name", "category", "color", "families")} for i in r["ingredients"]],
             "method": r["method"],
             "temperature": r["temperature"],
+            **({"house": r["house"]["name"]} if r.get("house") else {}),
+            **({"swaps": r["swaps"]} if r.get("swaps") else {}),
         },
     }

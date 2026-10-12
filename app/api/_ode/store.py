@@ -30,6 +30,7 @@ class Memory:
         self.lock = threading.Lock()
         self.creations, self.orders, self.out, self.leads = {}, [], {}, []
         self.users, self.saves = {}, {}
+        self.menus, self.seeded, self.modes = {}, set(), {}
 
     def stock_out(self, cafe):
         return sorted(self.out.get(cafe, set()))
@@ -121,6 +122,42 @@ class Memory:
         made = [self.creations[o["creationId"]] for o in week if o["creationId"] in self.creations]
         rated = [c for c in self.creations.values() if c["cafe"] == cafe and c.get("rating")][::-1]
         return _summarise(today, week, made, rated)
+
+    # the café's menu
+    def recipes(self, cafe):
+        return [dict(r) for r in self.menus.get(cafe, [])]
+
+    def add_recipe(self, cafe, r):
+        r = {**r, "id": r.get("id") or new_id(8), "createdAt": int(time.time() * 1000)}
+        with self.lock:
+            self.menus.setdefault(cafe, []).append(r)
+        return dict(r)
+
+    def update_recipe(self, cafe, rid, fields):
+        with self.lock:
+            r = next((r for r in self.menus.get(cafe, []) if r["id"] == rid), None)
+            if not r:
+                return None
+            r.update(fields)
+            return dict(r)
+
+    def delete_recipe(self, cafe, rid):
+        with self.lock:
+            before = len(self.menus.get(cafe, []))
+            self.menus[cafe] = [r for r in self.menus.get(cafe, []) if r["id"] != rid]
+            return len(self.menus[cafe]) < before
+
+    def menu_seeded(self, cafe):
+        return cafe in self.seeded
+
+    def mark_seeded(self, cafe):
+        self.seeded.add(cafe)
+
+    def get_mode(self, cafe):
+        return self.modes.get(cafe)
+
+    def set_mode(self, cafe, mode):
+        self.modes[cafe] = mode
 
     def advance(self, cafe, oid, status):
         with self.lock:
@@ -268,6 +305,57 @@ class Postgres:
             rated = [{**r["data"], "rating": r["rating"], "chips": r["chips"]} for r in c.execute(
                 "select data, rating, chips from creations where cafe_id = %s and rating is not null order by created_at desc limit 200", (cafe,))]
         return _summarise(today, week, made, rated)
+
+    # the café's menu
+    @staticmethod
+    def _recipe(r):
+        return {**r["data"], "id": r["id"], "status": r["status"], "createdAt": int(r["created_at"].timestamp() * 1000)}
+
+    def recipes(self, cafe):
+        with self.conn() as c:
+            return [self._recipe(r) for r in c.execute("select * from recipes where cafe_id = %s order by created_at, id", (cafe,))]
+
+    def add_recipe(self, cafe, r):
+        rid = r.get("id") or new_id(8)
+        data = {k: v for k, v in r.items() if k not in ("id", "status", "createdAt")}
+        with self.conn() as c:
+            row = c.execute("insert into recipes (id, cafe_id, data, status) values (%s, %s, %s, %s) on conflict (cafe_id, id) do update set data = excluded.data returning *",
+                            (rid, cafe, json.dumps(data), r.get("status", "approved"))).fetchone()
+        return self._recipe(row)
+
+    def update_recipe(self, cafe, rid, fields):
+        with self.conn() as c:
+            row = c.execute("select * from recipes where cafe_id = %s and id = %s", (cafe, rid)).fetchone()
+            if not row:
+                return None
+            cur = self._recipe(row)
+            cur.update(fields)
+            data = {k: v for k, v in cur.items() if k not in ("id", "status", "createdAt")}
+            row = c.execute("update recipes set data = %s, status = %s, updated_at = now() where cafe_id = %s and id = %s returning *",
+                            (json.dumps(data), cur["status"], cafe, rid)).fetchone()
+        return self._recipe(row)
+
+    def delete_recipe(self, cafe, rid):
+        with self.conn() as c:
+            return c.execute("delete from recipes where cafe_id = %s and id = %s", (cafe, rid)).rowcount > 0
+
+    def menu_seeded(self, cafe):
+        with self.conn() as c:
+            r = c.execute("select seeded from cafe_settings where cafe_id = %s", (cafe,)).fetchone()
+            return bool(r and r["seeded"])
+
+    def mark_seeded(self, cafe):
+        with self.conn() as c:
+            c.execute("insert into cafe_settings (cafe_id, seeded) values (%s, true) on conflict (cafe_id) do update set seeded = true", (cafe,))
+
+    def get_mode(self, cafe):
+        with self.conn() as c:
+            r = c.execute("select mode from cafe_settings where cafe_id = %s", (cafe,)).fetchone()
+            return r["mode"] if r else None
+
+    def set_mode(self, cafe, mode):
+        with self.conn() as c:
+            c.execute("insert into cafe_settings (cafe_id, mode) values (%s, %s) on conflict (cafe_id) do update set mode = excluded.mode", (cafe, mode))
 
     def advance(self, cafe, oid, status):
         prev = {v: k for k, v in NEXT.items()}.get(status)

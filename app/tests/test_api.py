@@ -49,7 +49,7 @@ def api():
     if os.environ.get("TEST_DATABASE_URL"):
         s = store.Postgres(os.environ["TEST_DATABASE_URL"])
         with s.conn() as c:
-            c.execute("truncate orders, saves, users, creations, stock_out, leads cascade")
+            c.execute("truncate orders, saves, users, creations, stock_out, leads, recipes, cafe_settings cascade")
     else:
         s = store.Memory()
     store.set_store(s)
@@ -70,6 +70,11 @@ def craft(api, **body):
     return lines[-1]["creation"]
 
 
+def open_mode(api):
+    """The free-composing engine (the café lets ode invent drinks from the pantry)."""
+    assert api.put("/api/cafes/demo/menu/mode", json={"mode": "open"}).status_code == 200
+
+
 def full(cid):
     return store.store().get_creation(cid)
 
@@ -79,6 +84,7 @@ def test_health_without_a_model(api):
 
 
 def test_rules_engine_makes_a_drink_without_a_model(api):
+    open_mode(api)
     c = craft(api, text="rainy evening, missing home", moods=["nostalgic"])
     assert c["name"] and len(c["lines"]) == 2
     assert c["recipe"]["temperature"] == "hot"
@@ -96,6 +102,7 @@ def test_customer_never_sees_portions_costs_or_steps(api):
 
 
 def test_model_answers_are_used_when_they_pass(api):
+    open_mode(api)
     m = Scripted(MoodRead=[MOOD], Recipe=[RECIPE], Lines=[LINES])
     llm.set_model(m)
     c = craft(api, text="rain on the window")
@@ -120,6 +127,7 @@ def test_customer_taps_win_over_the_model(api):
 
 
 def test_rejected_recipe_is_retried_with_reasons(api):
+    open_mode(api)
     bad = {"ingredients": ["black_tea", "espresso", "milk", "oat_milk"], "steps": ["Pull 2 shots of espresso."]}
     m = Scripted(MoodRead=[MOOD], Recipe=[bad, RECIPE], Lines=[LINES])
     llm.set_model(m)
@@ -138,6 +146,7 @@ def test_recipe_falls_back_to_rules_after_two_failures(api):
 
 
 def test_model_can_only_choose_from_allowed_pantry(api):
+    open_mode(api)
     m = Scripted(MoodRead=[MOOD], Recipe=[], Lines=[])
     llm.set_model(m)
     api.put("/api/cafes/demo/stock/cinnamon", json={"out": True})
@@ -172,6 +181,7 @@ def test_model_outage_still_makes_a_drink(api):
 
 
 def test_stock_out_keeps_an_ingredient_out_of_new_drinks(api):
+    open_mode(api)
     for item in ("ice", "mint"):
         api.put(f"/api/cafes/demo/stock/{item}", json={"out": True})
     for text in ("first day of summer, iced", "playful, sunny", "lemon fresh"):
@@ -336,3 +346,139 @@ def test_dashboard_stats(api):
     assert st["today"]["orders"] == 1 and st["today"]["revenue"] == o["price"]
     assert st["moods"][0][0] == "cozy" and st["rating"]["average"] == 4
     assert st["recent"][0]["chips"] == ["perfect"]
+
+
+# The café's menu: approved mode ------------------------------------------------------------
+
+def menu(api):
+    r = api.get("/api/cafes/demo/menu")
+    assert r.status_code == 200, r.text
+    return r.json()
+
+
+def test_approved_mode_is_the_default_and_serves_only_house_drinks(api):
+    m = menu(api)
+    assert m["mode"] == "approved"
+    house = {r["name"]: r for r in m["recipes"] if r["status"] == "approved"}
+    assert len(house) == 21
+    for text, temp in [("rainy evening, missing home", "hot"), ("first day of summer", "cold"), ("exam tomorrow", None), ("date night", "cold")]:
+        c = craft(api, text=text, **({"temp": temp} if temp else {}))
+        r = house[c["recipe"]["house"]]
+        assert [i["id"] for i in c["recipe"]["ingredients"]] == r["ingredients"]
+        assert c["price"] == r["price"]
+        assert full(c["id"])["recipe"]["house"]["name"] == r["name"]
+
+
+def test_a_switched_off_drink_is_never_served(api):
+    m = menu(api)
+    for r in m["recipes"]:
+        if r["temperature"] == "hot" and r["id"] != "karak_chai":
+            assert api.patch(f"/api/cafes/demo/menu/recipes/{r['id']}", json={"status": "off"}).status_code == 200
+    for text in ("rainy evening", "long day", "stressed about work"):
+        assert craft(api, text=text, temp="hot")["recipe"]["house"] == "Karak Chai"
+
+
+def test_dairy_free_guests_get_oat_milk_instead(api):
+    for text in ("rainy evening, missing home", "long day", "cozy night"):
+        c = craft(api, text=text, temp="hot", diet=["dairy"])
+        made = full(c["id"])["recipe"]
+        assert all("dairy" not in i.get("allergens", []) for i in made["ingredients"])
+        if made["swaps"]:
+            assert made["swaps"][0]["to"] in ("Oat milk", "Coconut milk")
+            assert any("instead of" in st for st in made["steps"])
+
+
+def test_when_nothing_on_the_menu_fits_the_guest_is_told_kindly(api):
+    api.put("/api/cafes/demo/stock/ice", json={"out": True})
+    r = api.post("/api/cafes/demo/craft", json={"text": "summer", "temp": "cold"})
+    last = [json.loads(x) for x in r.text.strip().split("\n")][-1]
+    assert "nothing on today's menu" in last["error"]
+    # without a chosen temperature, ode offers a warm drink instead of nothing
+    c = craft(api, text="summer")
+    assert c["recipe"]["temperature"] == "hot"
+
+
+def test_the_model_may_only_pick_among_the_best_house_drinks(api):
+    llm.set_model(Scripted(MoodRead=[MOOD], HousePick=[{"choice": "hot_chocolate"}], Lines=[LINES]))
+    c = craft(api, text="rain on the window, want something warm", temp="hot")
+    assert c["recipe"]["house"] == "Hot Chocolate" and c["name"] == LINES["name"]
+    sent = dict(llm.model().sent)
+    options = json.loads(sent["HousePick"].split("Menu: ")[1])
+    assert 2 <= len(options) <= 5 and "hot_chocolate" in [o["id"] for o in options]
+    assert full(c["id"])["source"]["recipe"] == "model"
+
+
+def test_owner_can_add_edit_and_remove_drinks(api):
+    r = api.post("/api/cafes/demo/menu/recipes", json={"name": "Rose Latte", "ingredients": ["espresso", "rose", "milk"], "temperature": "hot"})
+    assert r.status_code == 200, r.text
+    d = r.json()
+    assert d["status"] == "approved" and d["moods"] and d["price"] >= 490 and not d["priceSet"]
+    e = api.patch(f"/api/cafes/demo/menu/recipes/{d['id']}", json={"price": 820, "moods": ["romantic"]}).json()
+    assert e["price"] == 820 and e["priceSet"] and e["moods"] == ["romantic"]
+    assert api.patch(f"/api/cafes/demo/menu/recipes/{d['id']}", json={"price": 0}).json()["priceSet"] is False
+    assert api.delete(f"/api/cafes/demo/menu/recipes/{d['id']}").status_code == 200
+    assert d["id"] not in [x["id"] for x in menu(api)["recipes"]]
+
+
+def test_menu_rules_are_checked(api):
+    bad = [
+        ({"name": "Hot Lychee", "ingredients": ["lychee", "soda"], "temperature": "hot"}, "cannot be served hot"),
+        ({"name": "Mystery", "ingredients": ["unicorn"], "temperature": "hot"}, "not in your pantry"),
+        ({"name": "Twice", "ingredients": ["milk", "milk"], "temperature": "hot"}, "twice"),
+    ]
+    for body, msg in bad:
+        r = api.post("/api/cafes/demo/menu/recipes", json=body)
+        assert r.status_code == 422 and msg in r.json()["detail"]
+    for r in menu(api)["recipes"][1:]:
+        api.patch(f"/api/cafes/demo/menu/recipes/{r['id']}", json={"status": "off"})
+    last = menu(api)["recipes"][0]["id"]
+    assert api.patch(f"/api/cafes/demo/menu/recipes/{last}", json={"status": "off"}).status_code == 422
+    assert api.delete(f"/api/cafes/demo/menu/recipes/{last}").status_code == 422
+
+
+def test_coverage_shows_gaps_and_suggestions_fill_them(api):
+    m = menu(api)
+    assert m["coverage"]["playful"]["hot"] == 0 and m["coverage"]["cozy"]["hot"] >= 3
+    m = api.post("/api/cafes/demo/menu/suggest").json()
+    sugg = [r for r in m["recipes"] if r["status"] == "suggested"]
+    assert 1 <= len(sugg) <= 6
+    existing = {(r["temperature"], frozenset(r["ingredients"])) for r in m["recipes"] if r["status"] != "suggested"}
+    assert not any((r["temperature"], frozenset(r["ingredients"])) in existing for r in sugg)
+    assert any("playful" in r["why"] and r["temperature"] == "hot" for r in sugg)
+    first = sugg[0]
+    assert api.patch(f"/api/cafes/demo/menu/recipes/{first['id']}", json={"status": "approved"}).json()["status"] == "approved"
+    # asking again replaces the suggestions the owner did not act on, and keeps the approved one
+    again = api.post("/api/cafes/demo/menu/suggest").json()["recipes"]
+    assert first["id"] in [r["id"] for r in again if r["status"] == "approved"]
+
+
+def test_preview_shows_what_a_guest_would_get(api):
+    p = api.post("/api/cafes/demo/menu/preview", json={"text": "rainy evening, missing home", "temp": "hot"}).json()
+    assert p["mood"]["primary"] in ("nostalgic", "cozy") and 1 <= len(p["picks"]) <= 3
+    assert all(x["temperature"] == "hot" for x in p["picks"])
+    assert p["picks"][0]["because"]
+
+
+def test_open_mode_needs_no_menu_and_approved_mode_needs_one_drink(api):
+    open_mode(api)
+    c = craft(api, text="lazy sunday")
+    assert "house" not in c["recipe"]
+    for r in menu(api)["recipes"]:
+        api.delete(f"/api/cafes/demo/menu/recipes/{r['id']}")
+    r = api.put("/api/cafes/demo/menu/mode", json={"mode": "approved"})
+    assert r.status_code == 422 and "approve at least one" in r.json()["detail"]
+
+
+def test_the_menu_is_for_the_cafe_team_only(api):
+    plain = TestClient(index.app)
+    assert plain.get("/api/cafes/demo/menu").status_code == 401
+    assert plain.post("/api/cafes/demo/menu/suggest").status_code == 401
+    assert plain.put("/api/cafes/demo/menu/mode", json={"mode": "open"}).status_code == 401
+
+
+def test_the_board_shows_which_house_drink_to_make(api):
+    c = craft(api, text="lazy sunday", temp="hot")
+    api.post("/api/cafes/demo/orders", json={"creationId": c["id"], "size": "regular"})
+    ticket = api.get("/api/cafes/demo/board").json()["orders"][0]
+    assert ticket["creation"]["recipe"]["house"]["name"] == c["recipe"]["house"]
+    assert ticket["creation"]["recipe"]["steps"]

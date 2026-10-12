@@ -9,15 +9,15 @@ const STEPS = [
   ['Scan the table', 'Each table has a small ode card with a QR code. The menu opens in the browser. Nothing to download, no account.'],
   ['Say how you feel', 'A sentence in their own words, or one of the examples. “Rainy afternoon, missing home” is a perfectly good order.'],
   ['Tune it, if they like', 'Mood, hot or iced, sweetness and flavours are all optional. Allergies and diets are not suggestions: they are rules.'],
-  ['Watch it being written', 'A cup fills while ode reads the mood, picks from your pantry, balances the drink and writes its two lines.'],
+  ['Watch it being written', 'A cup fills while ode reads the mood, picks the drink from your menu that fits, and writes its name and two lines.'],
   ['Order and pay as usual', 'They pick a size and get a three-digit code. It lands on your barista board, and they pay at the counter.'],
   ['Keep it, share it', 'They rate it, save it, and save or share a story card with your café’s name on it. That is where the word spreads.'],
 ];
 
 const PIPE = [
   ['Read the mood', 'What they wrote and tapped becomes a mood, a temperature and the flavours they want.'],
-  ['Check your shelf', 'Only ingredients you have in stock, that suit the temperature and are safe for this person, make it through.'],
-  ['Build the recipe', 'A balanced drink from that list, with portions from your own pantry and a price from your costs.'],
+  ['Check your menu', 'Only drinks you approved, with everything in stock and safe for this person, make it through.'],
+  ['Pick the drink', 'The one that fits their mood best, made to your recipe and your price. Dairy-free guests get oat milk.'],
   ['Write the lines', 'A name and two lines in the ode voice. Every answer is checked before anyone sees it.'],
 ];
 

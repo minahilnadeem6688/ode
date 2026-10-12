@@ -52,7 +52,11 @@
 .plan--main .pill { background: rgba(250, 246, 240, .1); color: var(--honey); box-shadow: none; }
 .plan--main .plan__price small { color: var(--rain); }
 .plan--main li svg { color: var(--honey); }
-@media (min-width: 980px) { .plans { grid-template-columns: 1fr 1.15fr 1fr; } .plan--main { transform: translateY(-14px); } }
+@media (min-width: 760px) { .plans { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1180px) { .plans { grid-template-columns: 1fr 1.12fr 1fr 1fr; } .plan--main { transform: translateY(-14px); } }
+.plans__note { margin: 26px 0 0; text-align: center; font: 600 14px var(--sans); letter-spacing: .02em; color: var(--moss-deep); }
+.plan .display { font-size: clamp(34px, 3vw, 44px); }
+.plan__price b { font-size: clamp(40px, 3.6vw, 52px); }
 
 .faq { margin-top: 36px; border-top: 1px solid rgba(160, 135, 110, .2); max-width: 880px; }
 .faq details { border-bottom: 1px solid rgba(160, 135, 110, .2); }

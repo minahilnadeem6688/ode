@@ -1,10 +1,13 @@
 /*
- * The ode cup: a glazed ceramic cup on a saucer, its drink a slow living swirl of the drink's
- * own ingredient colours. Crafting mode drops the two logo drops in, one per stage, and the
- * colour deepens; hero mode lets you turn the cup, and hot drinks steam.
+ * The ode cup: a speckled stoneware cup on its saucer, or a glass tumbler with ice for iced
+ * drinks. Milk drinks carry crema and latte art (heart, tulip, rosette or swirl, chosen per
+ * drink); teas and coolers have a clear surface. Crafting mode drops the two logo drops in and
+ * the art rises as the drink is written; hero mode lets you turn the cup, and hot drinks steam.
+ *
+ * LIQUID_FRAG (the colour swirl) stays exported for the Wall's photo studio.
  */
 import { createStage, dropGeometry, glossy, reducedMotion } from './stage';
-import { PROP, rng } from './props';
+import { PROP, ice, rng } from './props';
 
 export const NOISE = `
   float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -44,81 +47,231 @@ export const LIQUID_FRAG = `
   }
 `;
 
+// A drink's surface: crema and latte art for milk drinks, a clear surface for the rest.
+const SURFACE_FRAG = `
+  uniform vec3 uBody; uniform vec3 uFoam; uniform float uMilk; uniform float uArt;
+  uniform float uTime; uniform float uIntensity; uniform float uDropT; uniform float uSeed;
+  varying vec2 vUv;
+  ${NOISE}
+  float sdHeart(vec2 p) {
+    p.x = abs(p.x);
+    if (p.y + p.x > 1.0) return sqrt(dot(p - vec2(0.25, 0.75), p - vec2(0.25, 0.75))) - 0.353553;
+    vec2 a = p - vec2(0.0, 1.0), b = p - 0.5 * max(p.x + p.y, 0.0);
+    return sqrt(min(dot(a, a), dot(b, b))) * sign(p.x - p.y);
+  }
+  float heart(vec2 p, vec2 c, float s) { return sdHeart((p - c) / s) * s; }
+  float line(vec2 p, float y0, float y1, float w) { return smoothstep(w, 0.0, abs(p.x) - 0.004) * step(y0, p.y) * step(p.y, y1); }
+  float crescent(vec2 q, vec2 c, float w, float h, float e) {
+    float o = length((q - c) / vec2(w, h)) - 1.0;
+    float i = length((q - c - vec2(0.0, h * 0.55)) / vec2(w * 0.9, h * 0.95)) - 1.0;
+    return smoothstep(e, -e, o) * smoothstep(-e, e, i);
+  }
+  float art(vec2 p) {
+    float e = 0.03;
+    float ang = (fract(uSeed * 0.37) - 0.5) * 0.5;                     // never poured perfectly straight
+    p = mat2(cos(ang), -sin(ang), sin(ang), cos(ang)) * p / 0.9;
+    p += vec2(fbm(p * 2.4 + uSeed) - 0.5, fbm(p * 2.4 - uSeed) - 0.5) * 0.07; // poured, not printed
+    if (uArt < 0.5) return 0.0;
+    if (uArt < 1.5) {
+      float d = heart(p, vec2(0.0, -0.46), 0.82);
+      return max(smoothstep(e, -e, d), line(p, -0.86, -0.46, 0.02));
+    }
+    if (uArt < 2.5) {
+      float d1 = heart(p, vec2(0.0, -0.64), 0.52), d2 = heart(p, vec2(0.0, -0.3), 0.44), d3 = heart(p, vec2(0.0, 0.02), 0.36);
+      float f = smoothstep(e, -e, min(min(d1, d2), d3));
+      f -= (smoothstep(0.026, 0.0, abs(d2)) + smoothstep(0.026, 0.0, abs(d3))) * 0.7;
+      return clamp(max(f, line(p, -0.9, 0.24, 0.018)), 0.0, 1.0);
+    }
+    if (uArt < 3.5) {
+      vec2 q = vec2(p.x, p.y - p.x * p.x * 0.75);                      // wings curl up at the sides
+      float f = 0.0;
+      for (int i = 0; i < 8; i++) {
+        float k = float(i);
+        f = max(f, crescent(q, vec2(0.0, -0.6 + k * 0.145), 0.58 - k * 0.058, 0.13 - k * 0.006, 0.12));
+      }
+      return max(f * 0.95, line(p, -0.82, 0.42, 0.018));
+    }
+    float r = length(p), a = atan(p.y, p.x);
+    return smoothstep(0.5, 0.85, sin(a + r * 15.0 - uSeed) * 0.5 + 0.5) * smoothstep(0.82, 0.15, r);
+  }
+  void main() {
+    vec2 p = vUv * 2.0 - 1.0;
+    float r = length(p);
+    vec3 col = uBody * (0.93 + 0.09 * smoothstep(0.15, 0.95, r));
+    col *= 0.97 + fbm(p * 2.4 + uSeed + uTime * 0.03) * 0.06;
+    if (uMilk > 0.5) {
+      vec3 crema = mix(uBody, vec3(0.72, 0.48, 0.27), 0.34);
+      float ring = smoothstep(0.42, 0.96, r);
+      col = mix(col, crema, ring * 0.5);
+      col -= smoothstep(0.64, 0.92, noise(p * 72.0 + uSeed)) * 0.07 * ring;
+      float a = art(p) * smoothstep(0.35, 1.0, uIntensity);
+      vec3 foam = uFoam - smoothstep(0.82, 0.96, noise(p * 150.0 + 3.0)) * 0.05 - (1.0 - fbm(p * 9.0 + uSeed)) * 0.04;
+      col = mix(col, mix(col, uFoam, 0.18), smoothstep(0.0, 0.5, art(p * 0.97)) * (1.0 - a) * 0.6); // a soft halo
+      col = mix(col, foam, a);
+      col = mix(col, uFoam, smoothstep(0.9, 0.99, r) * 0.25); // foam clings to the wall
+    } else {
+      col += smoothstep(0.56, 0.82, fbm(p * 5.0 + uTime * 0.05 + uSeed)) * 0.05;
+    }
+    col = mix(col, vec3(0.94, 0.89, 0.81), (1.0 - uIntensity) * 0.84);
+    float since = uTime - uDropT, front = since * 0.55;
+    col += sin((r - front) * 42.0) * exp(-pow((r - front) * 6.0, 2.0)) * exp(-since * 1.1) * 0.09;
+    col += smoothstep(0.93, 0.99, r) * 0.07;
+    col *= 1.0 - smoothstep(0.72, 1.0, r) * 0.12 * (0.55 + 0.45 * p.y);
+    vec2 h = (p - vec2(-0.38, 0.42)) * vec2(1.0, 1.9);
+    col += exp(-dot(h, h) * 9.0) * 0.07;
+    gl_FragColor = vec4(col, 1.0);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`;
+
+// The side of an iced drink in its glass: layered when there is milk.
+const COLUMN_FRAG = `
+  uniform vec3 uBody; uniform vec3 uFoam; uniform float uMilk; uniform float uTime;
+  varying vec2 vUv; varying vec3 vN; varying vec3 vV;
+  ${NOISE}
+  void main() {
+    float y = vUv.y;
+    vec3 col = uBody;
+    if (uMilk > 0.5) {
+      float edge = 0.42 + (fbm(vec2(vUv.x * 6.0, uTime * 0.05)) - 0.5) * 0.18;
+      col = mix(uFoam * 0.97, uBody, smoothstep(edge - 0.12, edge + 0.12, y));
+    }
+    col *= 0.86 + 0.14 * y;
+    float facing = clamp(dot(normalize(vN), normalize(vV)), 0.0, 1.0);
+    col *= 0.78 + 0.22 * facing;
+    col += pow(1.0 - facing, 3.0) * 0.12;
+    gl_FragColor = vec4(col, 0.94);
+    #include <tonemapping_fragment>
+    #include <colorspace_fragment>
+  }
+`;
+
 const STEAM_FRAG = `
   uniform float uTime; uniform float uSeed; varying vec2 vUv;
   ${NOISE}
   void main() {
     vec2 p = vUv;
-    float x = p.x - 0.5 + sin(p.y * 5.0 + uTime * 0.8 + uSeed) * 0.12 * p.y;
-    float wisp = exp(-x * x * 40.0) * fbm(vec2(p.x * 3.0 + uSeed, p.y * 2.0 - uTime * 0.35));
-    float fade = smoothstep(0.0, 0.25, p.y) * (1.0 - smoothstep(0.55, 1.0, p.y));
-    gl_FragColor = vec4(vec3(1.0, 0.98, 0.95), wisp * fade * 0.55);
+    float x = p.x - 0.5 + sin(p.y * 4.5 + uTime * 0.7 + uSeed) * 0.11 * p.y + (fbm(vec2(uSeed, p.y * 1.5 - uTime * 0.2)) - 0.5) * 0.12;
+    float wisp = exp(-x * x * 70.0) * fbm(vec2(p.x * 4.0 + uSeed, p.y * 2.4 - uTime * 0.32));
+    float fade = smoothstep(0.0, 0.22, p.y) * (1.0 - smoothstep(0.5, 1.0, p.y));
+    gl_FragColor = vec4(vec3(1.0, 0.985, 0.96), wisp * fade * 0.5);
   }
 `;
 
-export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero', hot = false, intro = false } = {}) {
+const VERT = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }';
+const VERT_LIT = 'varying vec2 vUv; varying vec3 vN; varying vec3 vV; void main(){ vUv = uv; vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalMatrix * normal; vV = -mv.xyz; gl_Position = projectionMatrix * mv; }';
+
+// Speckled stoneware: an off-white glaze with fine iron flecks, drawn once.
+function stoneware(THREE) {
+  const c = document.createElement('canvas'); c.width = c.height = 512;
+  const g = c.getContext('2d');
+  g.fillStyle = '#FBF6EE'; g.fillRect(0, 0, 512, 512);
+  const r = rng('stoneware');
+  for (let i = 0; i < 14; i++) { g.fillStyle = `rgba(${r() < 0.5 ? '255,255,250' : '232,220,204'},${0.25 + r() * 0.3})`; g.beginPath(); g.ellipse(r() * 512, r() * 512, 40 + r() * 120, 20 + r() * 60, r() * 3, 0, 7); g.fill(); }
+  for (let i = 0; i < 2600; i++) {
+    const big = r() < 0.06;
+    g.fillStyle = `rgba(${big ? '110,84,62' : '140,112,88'},${0.18 + r() * (big ? 0.45 : 0.3)})`;
+    g.beginPath(); g.arc(r() * 512, r() * 512, big ? 0.9 + r() * 1.2 : 0.35 + r() * 0.6, 0, 7); g.fill();
+  }
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
+  return t;
+}
+
+export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero', hot = false, intro = false, surface } = {}) {
   const st = createStage(canvas, { fov: 30 });
   const { THREE, scene, camera } = st;
   const still = reducedMotion();
   const show = intro && !still; // the website's opening moment
-  camera.position.set(0, mode === 'hero' ? (show ? 4.3 : 3.5) : 3.2, mode === 'hero' ? (show ? 7.2 : 4.9) : 4.4);
-  camera.lookAt(0, show ? 0.55 : 0.38, 0);
+  const drink = surface || surfaceFromColors(colors);
+  const glassy = mode === 'hero' && drink.cold;
+  camera.position.set(0, mode === 'hero' ? (show ? 4.3 : glassy ? 3.0 : 3.5) : 3.2, mode === 'hero' ? (show ? 7.2 : glassy ? 5.1 : 4.9) : 4.4);
+  camera.lookAt(0, show ? 0.55 : glassy ? 0.62 : 0.38, 0);
 
   const cup = new THREE.Group();
   scene.add(cup);
+  const tex = stoneware(THREE);
+  const glaze = new THREE.MeshPhysicalMaterial({ color: '#FFFFFF', map: tex, roughness: 0.38, clearcoat: 0.8, clearcoatRoughness: 0.22, sheen: 0.25, sheenColor: new THREE.Color('#FFF1E2') });
+  const clay = new THREE.MeshStandardMaterial({ color: '#D8C7B0', roughness: 0.92 });
+  const lathe = (pts, m) => new THREE.Mesh(new THREE.LatheGeometry(pts.map(([x, y]) => new THREE.Vector2(x, y)), 112), m);
 
-  const glaze = new THREE.MeshPhysicalMaterial({ color: '#FFFCF6', roughness: 0.32, clearcoat: 0.7, clearcoatRoughness: 0.2, sheen: 0.3, sheenColor: new THREE.Color('#FFF1E2') });
-  // cup wall: outside up to the rim, over the lip, then down the inside
-  const prof = [[0.0, 0.02], [0.5, 0.02], [0.56, 0.04], [0.6, 0.1], [0.72, 0.38], [0.84, 0.66], [0.92, 0.86], [0.96, 0.95], [0.955, 0.985], [0.93, 0.99], [0.905, 0.95], [0.86, 0.8], [0.76, 0.52], [0.63, 0.22], [0.52, 0.1], [0.0, 0.1]];
-  const wall = new THREE.Mesh(new THREE.LatheGeometry(prof.map(([x, y]) => new THREE.Vector2(x, y)), 96), glaze);
-  cup.add(wall);
+  const toLinear = (c) => new THREE.Color(c);
+  const uniforms = {
+    uBody: { value: toLinear(drink.body) }, uFoam: { value: toLinear(drink.foam) }, uMilk: { value: drink.milk ? 1 : 0 }, uArt: { value: drink.art },
+    uTime: { value: 0 }, uIntensity: { value: mode === 'crafting' || show ? 0 : 1 }, uDropT: { value: -10 }, uSeed: { value: drink.seed ?? Math.random() * 10 },
+  };
+  const surfaceMat = new THREE.ShaderMaterial({ uniforms, vertexShader: VERT, fragmentShader: SURFACE_FRAG });
+  let saucer = null;
+  let liquidY = 0.8;
 
-  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.26, 0.055, 20, 48, Math.PI * 1.15), glaze);
-  handle.position.set(0.86, 0.52, 0);
-  handle.rotation.z = -Math.PI * 0.575;
-  cup.add(handle);
+  if (!glassy) {
+    // stoneware cup: glazed wall over the lip and down inside, an unglazed foot, a sculpted handle
+    const prof = [[0.48, 0.06], [0.56, 0.07], [0.6, 0.12], [0.72, 0.38], [0.84, 0.66], [0.92, 0.86], [0.96, 0.95], [0.958, 0.983], [0.935, 0.992], [0.906, 0.95], [0.862, 0.8], [0.762, 0.52], [0.632, 0.22], [0.52, 0.11], [0.0, 0.11]];
+    cup.add(lathe(prof, glaze));
+    cup.add(lathe([[0.0, 0.0], [0.47, 0.0], [0.5, 0.02], [0.5, 0.06], [0.48, 0.065], [0.0, 0.065]], clay));
+    const curve = new THREE.CatmullRomCurve3([[0.86, 0.76], [1.08, 0.82], [1.25, 0.66], [1.2, 0.42], [1.0, 0.3], [0.76, 0.3]].map(([x, y]) => new THREE.Vector3(x, y, 0)));
+    const handle = new THREE.Mesh(new THREE.TubeGeometry(curve, 48, 0.052, 16, false), glaze);
+    handle.scale.set(1, 1, 1.25);
+    cup.add(handle);
 
-  const saucerProf = [[0, 0], [0.9, 0], [1.38, 0.05], [1.45, 0.1], [1.42, 0.12], [1.3, 0.09], [0.92, 0.05], [0, 0.05]];
-  const saucer = new THREE.Mesh(new THREE.LatheGeometry(saucerProf.map(([x, y]) => new THREE.Vector2(x, y)), 96), glaze);
-  saucer.position.y = -0.05;
-  scene.add(saucer);
+    saucer = new THREE.Group();
+    saucer.add(lathe([[0.0, 0.03], [0.62, 0.03], [0.9, 0.05], [1.3, 0.085], [1.4, 0.11], [1.445, 0.13], [1.45, 0.145], [1.435, 0.158], [1.4, 0.16], [1.32, 0.14], [0.92, 0.09], [0.6, 0.078], [0.0, 0.078]], glaze));
+    saucer.add(lathe([[0.0, 0.0], [0.56, 0.0], [0.6, 0.015], [0.6, 0.035], [0.0, 0.035]], clay));
+    saucer.position.y = -0.08;
+    scene.add(saucer);
 
-  // soft contact shadow under the saucer
+    const liquid = new THREE.Mesh(new THREE.CircleGeometry(0.85, 112), surfaceMat);
+    liquid.rotation.x = -Math.PI / 2;
+    liquid.position.y = liquidY;
+    cup.add(liquid);
+  } else {
+    // iced: a heavy tumbler, the drink layered inside, ice on top
+    liquidY = 1.12;
+    const colMat = new THREE.ShaderMaterial({ uniforms: { uBody: uniforms.uBody, uFoam: uniforms.uFoam, uMilk: uniforms.uMilk, uTime: uniforms.uTime }, vertexShader: VERT_LIT, fragmentShader: COLUMN_FRAG, transparent: true });
+    const column = new THREE.Mesh(new THREE.CylinderGeometry(0.645, 0.565, 1.02, 72, 1, true), colMat);
+    column.position.y = 0.61;
+    cup.add(column);
+    const top = new THREE.Mesh(new THREE.CircleGeometry(0.645, 96), new THREE.ShaderMaterial({ uniforms: { ...uniforms, uMilk: { value: 0 }, uArt: { value: 0 } }, vertexShader: VERT, fragmentShader: SURFACE_FRAG }));
+    top.rotation.x = -Math.PI / 2;
+    top.position.y = liquidY;
+    cup.add(top);
+    const r = rng('ice' + (drink.seed || 1));
+    for (let i = 0; i < 3; i++) {
+      const c = ice(0.27);
+      const a = i * 2.2 + r();
+      c.position.set(Math.cos(a) * 0.3, liquidY - 0.16 + r() * 0.06, Math.sin(a) * 0.3);
+      c.rotation.set(r() * 0.5, r() * 3, r() * 0.5);
+      cup.add(c);
+    }
+    const glass = lathe([[0.0, 0.0], [0.58, 0.0], [0.6, 0.02], [0.7, 1.5], [0.68, 1.52], [0.655, 1.5], [0.57, 0.1], [0.0, 0.1]],
+      new THREE.MeshPhysicalMaterial({ color: '#FFFFFF', roughness: 0.04, clearcoat: 1, clearcoatRoughness: 0.05, transparent: true, opacity: 0.2, envMapIntensity: 2.2, side: THREE.DoubleSide, depthWrite: false }));
+    glass.renderOrder = 3;
+    cup.add(glass);
+  }
+
+  // soft contact shadow under the cup or glass
   const shadowTex = (() => {
     const c = document.createElement('canvas'); c.width = c.height = 128;
-    const g = c.getContext('2d'); const grd = g.createRadialGradient(64, 64, 10, 64, 64, 54);
-    grd.addColorStop(0, 'rgba(58,53,48,.35)'); grd.addColorStop(1, 'rgba(58,53,48,0)');
+    const g = c.getContext('2d'); const grd = g.createRadialGradient(64, 64, 8, 64, 64, 56);
+    grd.addColorStop(0, 'rgba(58,45,35,.38)'); grd.addColorStop(0.55, 'rgba(58,45,35,.14)'); grd.addColorStop(1, 'rgba(58,45,35,0)');
     g.fillStyle = grd; g.fillRect(0, 0, 128, 128);
     return new THREE.CanvasTexture(c);
   })();
-  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 3.6), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
+  const shadow = new THREE.Mesh(new THREE.PlaneGeometry(glassy ? 2.6 : 3.6, glassy ? 2.6 : 3.6), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }));
   shadow.rotation.x = -Math.PI / 2;
-  shadow.position.y = -0.06;
+  shadow.position.set(0.12, -0.085, 0.1);
   scene.add(shadow);
 
-  const toLinear = (c) => new THREE.Color(c);
-  const pal = [...colors, ...colors, ...colors].slice(0, 4);
-  const uniforms = {
-    uC0: { value: toLinear(pal[0]) }, uC1: { value: toLinear(pal[1]) }, uC2: { value: toLinear(pal[2]) }, uC3: { value: toLinear(pal[3]) },
-    uTime: { value: 0 }, uIntensity: { value: mode === 'crafting' || show ? 0 : 1 }, uDropT: { value: -10 }, uSeed: { value: Math.random() * 10 },
-  };
-  const liquid = new THREE.Mesh(new THREE.CircleGeometry(0.83, 96), new THREE.ShaderMaterial({
-    uniforms, vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }', fragmentShader: LIQUID_FRAG,
-  }));
-  liquid.rotation.x = -Math.PI / 2;
-  liquid.position.y = 0.8;
-  cup.add(liquid);
-
   const steam = [];
-  let isHot = hot;
-  if (mode === 'hero') {
-    for (let i = 0; i < 2; i++) {
-      const m = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 1.6), new THREE.ShaderMaterial({
-        uniforms: { uTime: uniforms.uTime, uSeed: { value: i * 3.3 } }, transparent: true, depthWrite: false,
-        vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }', fragmentShader: STEAM_FRAG,
+  let isHot = hot && !glassy;
+  if (mode === 'hero' && !glassy) {
+    for (let i = 0; i < 3; i++) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.7), new THREE.ShaderMaterial({
+        uniforms: { uTime: uniforms.uTime, uSeed: { value: i * 2.7 + 1 } }, transparent: true, depthWrite: false, vertexShader: VERT, fragmentShader: STEAM_FRAG,
       }));
-      m.position.set(i ? 0.18 : -0.15, 1.65, i ? -0.1 : 0.1);
-      m.visible = hot && !show;
+      m.position.set([-0.18, 0.12, 0.02][i], liquidY + 0.9, [0.1, -0.08, 0.16][i]);
+      m.visible = isHot && !show;
       scene.add(m);
       steam.push(m);
     }
@@ -137,7 +290,6 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
     });
   }
   let stage = 0, target = mode === 'crafting' || show ? 0 : 1;
-
   // the opening: ingredients that drift around the cup once the drink has poured
   const orbit = new THREE.Group();
   const floaters = [];
@@ -163,7 +315,7 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
   const lean = (e) => { tilt.tx = (e.clientY / window.innerHeight - 0.5) * 0.25; tilt.ty = (e.clientX / window.innerWidth - 0.5) * 0.4; st.refresh(); };
   if (show) window.addEventListener('pointermove', lean, { passive: true });
   // colours glide to new ones instead of jumping (the website's live demo changes them)
-  const goal = [uniforms.uC0, uniforms.uC1, uniforms.uC2, uniforms.uC3].map((u) => u.value.clone());
+  const goal = { body: uniforms.uBody.value.clone(), foam: uniforms.uFoam.value.clone() };
 
   // turning the cup by hand (hero)
   let spin = 0, vel = 0, dragging = false, lastX = 0;
@@ -181,7 +333,8 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
   const springy = (k) => { k = Math.min(1, Math.max(0, k)); return 1 + Math.pow(2, -9 * k) * Math.sin((k * 9 - 0.75) * ((2 * Math.PI) / 3)) * -1 * (k < 1 ? 1 : 0); };
   st.setFrame((t) => {
     uniforms.uTime.value = t;
-    [uniforms.uC0, uniforms.uC1, uniforms.uC2, uniforms.uC3].forEach((u, i) => u.value.lerp(goal[i], still ? 1 : 0.04));
+    uniforms.uBody.value.lerp(goal.body, still ? 1 : 0.05);
+    uniforms.uFoam.value.lerp(goal.foam, still ? 1 : 0.05);
     uniforms.uIntensity.value += (target - uniforms.uIntensity.value) * 0.03;
     if (still) uniforms.uIntensity.value = target;
     if (mode === 'hero') {
@@ -194,7 +347,7 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
         // the cup rises in, then the honey drop and the cherry drop fall into it
         const k = springy(e / 1.1);
         cup.scale.setScalar(0.82 + 0.18 * k);
-        saucer.scale.setScalar(0.82 + 0.18 * k);
+        saucer?.scale.setScalar(0.82 + 0.18 * k);
         cup.position.y = (1 - ease(e / 0.9)) * -0.35;
         drops.forEach(({ m, i }) => {
           const s0 = 0.55 + i * 0.6, f = (e - s0) / 0.6;
@@ -239,9 +392,12 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
 
   return {
     setStage(n) { if (mode !== 'crafting') return; stage = n; target = Math.min(1, n / 3); },
-    setColors(list) {
-      const next = [...list, ...list, ...list].slice(0, 4);
-      next.forEach((c, i) => goal[i].set(c));
+    setColors(list) { this.setSurface(surfaceFromColors(list)); },
+    setSurface(d) {
+      goal.body.set(d.body); goal.foam.set(d.foam);
+      uniforms.uMilk.value = d.milk ? 1 : 0;
+      uniforms.uArt.value = d.art;
+      if (d.seed != null) uniforms.uSeed.value = d.seed;
       uniforms.uDropT.value = uniforms.uTime.value; // a ripple as the new drink pours in
       st.refresh();
     },
@@ -253,7 +409,15 @@ export function mountCup(canvas, { colors = ['#D4A55A', '#C4858C'], mode = 'hero
       canvas.removeEventListener('pointerup', up);
       canvas.removeEventListener('pointercancel', up);
       shadowTex.dispose();
+      tex.dispose();
       st.dispose();
     },
   };
+}
+
+// Before the drink is known (crafting) or for a bare colour list: a latte look, with a heart.
+export function surfaceFromColors(list = []) {
+  const mixHex = (a, b, t) => '#' + [0, 2, 4].map((i) => Math.round(parseInt(a.slice(1 + i, 3 + i), 16) * (1 - t) + parseInt(b.slice(1 + i, 3 + i), 16) * t).toString(16).padStart(2, '0')).join('');
+  const avg = list.length ? list.reduce((acc, c) => mixHex(acc, c, 1 / 2), list[0]) : '#C9A27A';
+  return { body: mixHex(avg, '#8A5A3C', 0.45), foam: '#FBF4EA', milk: true, art: 1, cold: false };
 }
