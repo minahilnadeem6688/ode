@@ -1,8 +1,41 @@
+<div align="center">
+
 # ode.
 
 *the menu is you.*
 
-A mood menu for cafés. A customer scans a QR code, says how they feel, and gets a drink written only for them: a name, two lines, its own artwork and a price, built from that café's ingredients. The order lands on the barista's board; the customer pays at the counter as usual.
+A mood menu for cafés: guests say how they feel and get a drink from the café's own approved menu, with a name and two lines written just for them.
+
+**[Live site](https://ode-gamma.vercel.app)** · **[Try the guest menu](https://ode-gamma.vercel.app/c/demo)**
+
+<img src="docs/screenshots/01-home.webp" width="880" alt="ode home page: the menu is you, beside a stoneware cup with a latte heart" />
+
+</div>
+
+## About
+
+A customer scans a QR code at the table and says how they feel, in their own words. ode picks the drink on the café's menu that fits, checks it against their allergies and what is in stock, and gives it a name and two lines written only for them. The order lands on the barista's board with the exact recipe; the customer pays at the counter as usual. The owner approves every drink that can ever be served.
+
+## Screens
+
+<table>
+  <tr>
+    <td width="33%"><img src="docs/screenshots/02-phone-mood.webp" alt="Guest screen: tell us how you feel" /></td>
+    <td width="33%"><img src="docs/screenshots/03-phone-ode.webp" alt="The ode: a 3D cup with latte art, the drink's name and two lines" /></td>
+    <td width="33%"><img src="docs/screenshots/04-phone-share.webp" alt="Story card with the café's name and handle" /></td>
+  </tr>
+  <tr>
+    <td align="center">Say how you feel</td>
+    <td align="center">Your ode, from the café's menu</td>
+    <td align="center">A story card to share</td>
+  </tr>
+</table>
+
+| Barista board | Menu tab: preview a mood |
+| --- | --- |
+| <img src="docs/screenshots/05-barista.webp" alt="Barista ticket with a dairy-free warning and an oat milk swap" /> | <img src="docs/screenshots/06-menu-preview.webp" alt="Approval mode, a mood preview and the coverage map" /> |
+| **Suggestions the owner approves** | **Approved drinks, costs and margins** |
+| <img src="docs/screenshots/07-suggestions.webp" alt="Suggested drinks with Approve, Edit first and Dismiss" /> | <img src="docs/screenshots/08-menu.webp" alt="The café's drinks with on and off switches, cost and margin" /> |
 
 ## What's here
 
@@ -67,7 +100,7 @@ cd api && uvicorn index:app --port 8000          # memory store, no model: rules
 ODE_API=http://localhost:8000 npm run dev         # in app/, in another terminal
 ```
 
-Tests (18, all paths of the pipeline with a scripted model; set `TEST_DATABASE_URL` to run them on Postgres):
+Tests (39, covering every path of the pipeline with a scripted model, approval mode, stock, diet swaps and staff access; set `TEST_DATABASE_URL` to run them on Postgres):
 
 ```bash
 cd app && pip install pytest httpx && pytest tests
@@ -91,4 +124,4 @@ Environment variables, set in Vercel only:
 
 ## Status
 
-In: the customer flow, accounts, the barista board, the owner dashboard (overview, menu approval, pantry, table cards) and the API. Next: menu import from a photo, specials from much-loved odes, and the café wall.
+Live at [ode-gamma.vercel.app](https://ode-gamma.vercel.app). In: the customer flow, accounts, the barista board, the owner dashboard (overview, menu approval, pantry, table cards) and the API. Next: menu import from a photo, specials from much-loved odes, and the café wall.
